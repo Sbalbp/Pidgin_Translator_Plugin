@@ -96,6 +96,77 @@ void pythonFinalize(){
 }
 
 /**
+ * @brief Retrieves a Python string containing the Apertium-APY current address
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @return The address (as a PyObject-string) if the call was successful, or Py_None otherwise
+ */
+PyObject* getAPYAddress(){
+    PyObject *pFunc, *pArgs, *result;
+
+    if (iface_module != NULL) {
+        pFunc = PyObject_GetAttrString(iface_module, "getAPYAddress");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(0);
+
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            if (result != NULL) {
+                return result;
+            }
+            else {
+                Py_DECREF(pFunc);
+                return Py_None;
+            }
+        }
+        else {
+            return Py_None;
+        }
+        Py_XDECREF(pFunc);
+    }
+    else {
+        notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
+        return Py_None;
+    }
+}
+
+/**
+ * @brief Sets the address where the request for the Apertium-APY will be sent
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param address Pointer to a string with the new address
+ * @param port Pointer to a string with the new port. NULL if no port is needed
+ */
+void setAPYAddress(char* address, char* port){
+    PyObject *pFunc, *pArg, *pArgs;
+
+    if (iface_module != NULL) {
+        pFunc = PyObject_GetAttrString(iface_module, "setAPYAddress");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(2);
+
+            pArg = PyString_FromString(address);
+            PyTuple_SetItem(pArgs, 0, pArg);
+
+            pArg = port == NULL ? Py_None : PyString_FromString(port);
+            PyTuple_SetItem(pArgs, 1, pArg);
+
+            PyObject_CallObject(pFunc, pArgs);
+        }
+        else {
+            return;
+        }
+        Py_XDECREF(pFunc);
+    }
+    else {
+        notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
+        return;
+    }
+}
+
+/**
  * @brief Retrieves the Python dictionary containing the user-language_pair settings
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)

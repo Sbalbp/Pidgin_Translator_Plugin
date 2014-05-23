@@ -23,6 +23,10 @@ void pythonInit();
 
 void pythonFinalize();
 
+PyObject* getAPYAddress();
+
+void setAPYAddress(char* address, char* port);
+
 PyObject* getDictionary();
 
 PyObject* setDictionary(PyObject* item);

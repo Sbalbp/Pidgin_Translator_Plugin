@@ -28,6 +28,24 @@ import json
 ## Address of the Apertium-APY
 apyAddress = 'http://localhost:2737'
 
+## Retrieves the current address where the APY requests are sent
+#
+# @return A string with the current APY address
+def getAPYAddress():
+	return apyAddress
+
+## Changes the address where request to the APY will be sent
+#
+# @param newAddress New address for the APY
+# @param newPort Port for the APY. None if no port is needed
+def setAPYAddress(newAddress, newPort):
+	global apyAddress
+
+	if(newPort is not None):
+		newAddress = newAddress+':'+newPort
+
+	apyAddress = newAddress
+
 ## Retrieves a list with all the available language pairs
 #
 # @return A dictionary with the following fields:<br>

@@ -58,6 +58,20 @@ PurpleCmdId check_command_id;
  */
 PurpleCmdId pairs_command_id;
 
+/**
+ * @brief ID for the 'apertium_apy' (without arguments) command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId apy_noargs_command_id;
+
+/**
+ * @brief ID for the 'apertium_apy' (with arguments) command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId apy_args_command_id;
+
 /****************************************************************************************************/
 /*----------------------------------------------UTILS-----------------------------------------------*/
 /****************************************************************************************************/
@@ -273,6 +287,59 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 	}
 }
 
+/**
+ * @brief Callback for the 'apertium_apy' command when no arguments are passed
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    PyObject *address;
+
+    if((address = getAPYAddress()) == Py_None){
+        notify_error("returned pynone");
+        return PURPLE_CMD_RET_FAILED;
+    }
+    else{
+        notify_info("APY address",PyString_AsString(address));
+        Py_XDECREF(address);
+
+        return PURPLE_CMD_RET_OK;
+    }
+}
+
+/**
+ * @brief Callback for the 'apertium_apy' command when arguments are passed
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    char *address, *port;
+
+    if((address = strtok(*args," ")) == NULL){
+        notify_error("No address provided");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    port = strtok(NULL," ");
+    setAPYAddress(address,port);
+
+    return PURPLE_CMD_RET_OK;
+}
+
 /****************************************************************************************************/
 /*--------------------------------CONVERSATION CALLBACK DEFINITIONS---------------------------------*/
 /****************************************************************************************************/
@@ -373,6 +440,16 @@ gboolean plugin_load(PurplePlugin *plugin){
     pairs_command_id = purple_cmd_register("apertium_pairs", "", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_pairs_cb,
         "apertium_pairs\nShows all the available Apertium language pairs that can be used.",
+        NULL);
+
+    apy_noargs_command_id = purple_cmd_register("apertium_apy", "", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_apy_noargs_cb,
+        "apertium_apy\nShows the address of the Apertium-APY that will translate messages.",
+        NULL);
+
+    apy_args_command_id = purple_cmd_register("apertium_apy", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_apy_args_cb,
+        "apertium_apy \'address\' \'port\'\nSets the address where the Apertium-APY is located.\nThe \'port\' argument is optional",
         NULL);
 
 	// Python embedding
