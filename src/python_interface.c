@@ -134,12 +134,14 @@ PyObject* getAPYAddress(){
 /**
  * @brief Sets the address where the request for the Apertium-APY will be sent
  *
+ * The address will not be set if there is no response from an APY server <br>
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @param address Pointer to a string with the new address
  * @param port Pointer to a string with the new port. NULL if no port is needed
+ * @return 1 if the call was successful and the address was set, or 0 otherwise
  */
-void setAPYAddress(char* address, char* port){
-    PyObject *pFunc, *pArg, *pArgs;
+int setAPYAddress(char* address, char* port){
+    PyObject *pFunc, *pArg, *pArgs, *result;
 
     if (iface_module != NULL) {
         pFunc = PyObject_GetAttrString(iface_module, "setAPYAddress");
@@ -153,16 +155,32 @@ void setAPYAddress(char* address, char* port){
             pArg = port == NULL ? Py_None : PyString_FromString(port);
             PyTuple_SetItem(pArgs, 1, pArg);
 
-            PyObject_CallObject(pFunc, pArgs);
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            if (result != NULL){
+                Py_DECREF(pFunc);
+
+                if(result == Py_True){
+                    return 1;
+                }
+                else{
+                    notify_error("No response from given address");
+                    return 0;
+                }
+            }
+            else {
+                Py_DECREF(pFunc);
+                return 0;
+            }
         }
         else {
-            return;
+            return 0;
         }
         Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return;
+        return 0;
     }
 }
 
@@ -336,6 +354,8 @@ int pairExists(char* source, char* target){
 
             if (result != NULL) {
                 if(PyDict_GetItemString(result,"ok") == Py_True){
+                    Py_DECREF(pFunc);
+
                     if(PyDict_GetItemString(result,"result") == Py_True){
                         return 1;
                     }
@@ -345,6 +365,7 @@ int pairExists(char* source, char* target){
                     }
                 }
                 else{
+                    Py_DECREF(pFunc);
                     notify_error(PyString_AsString(PyDict_GetItemString(result,"errorMsg")));
                     return 0;
                 }

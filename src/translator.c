@@ -335,7 +335,9 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
     }
 
     port = strtok(NULL," ");
-    setAPYAddress(address,port);
+    if(!setAPYAddress(address,port)){
+        return PURPLE_CMD_RET_FAILED;
+    }
 
     return PURPLE_CMD_RET_OK;
 }

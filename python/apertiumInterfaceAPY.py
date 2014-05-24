@@ -28,6 +28,22 @@ import json
 ## Address of the Apertium-APY
 apyAddress = 'http://localhost:2737'
 
+## Checks whether an APY server is running in the address given
+#
+# @param address Address to be checked
+# @return True if there was a response from the server, False otherwise
+def checkAPY(address):
+	try:
+		request = urllib2.urlopen(address+'/listPairs')
+	except urllib2.URLError:
+		return False
+	except urllib2.HTTPError:
+		return False
+	except ValueError:
+		return False
+
+	return True
+
 ## Retrieves the current address where the APY requests are sent
 #
 # @return A string with the current APY address
@@ -36,15 +52,21 @@ def getAPYAddress():
 
 ## Changes the address where request to the APY will be sent
 #
+# The address is only changed if there was a postive checkAPY() response for it
 # @param newAddress New address for the APY
 # @param newPort Port for the APY. None if no port is needed
+# @return True if the new address was set, False otherwise
 def setAPYAddress(newAddress, newPort):
 	global apyAddress
 
 	if(newPort is not None):
 		newAddress = newAddress+':'+newPort
 
-	apyAddress = newAddress
+	if(checkAPY(newAddress)):
+		apyAddress = newAddress
+		return True
+	else:
+		return False
 
 ## Retrieves a list with all the available language pairs
 #

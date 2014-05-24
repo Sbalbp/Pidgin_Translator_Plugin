@@ -25,7 +25,7 @@ void pythonFinalize();
 
 PyObject* getAPYAddress();
 
-void setAPYAddress(char* address, char* port);
+int setAPYAddress(char* address, char* port);
 
 PyObject* getDictionary();
 
