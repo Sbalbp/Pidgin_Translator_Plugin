@@ -20,14 +20,19 @@
 GLIB_CFLAGS = `pkg-config --libs --cflags glib-2.0`
 LIBPURPLE = -I ~/development/pidgin-2.10.9/libpurple
 LIBPYTHON = `pkg-config --libs --cflags python2`
+PYTHONDIR = /usr/lib/python2.7
 INC = include
 SRC = src
 OBJ = obj
 SO = so
 PLUGIN_DIR = ~/.purple/plugins
 
-all: $(PLUGIN_DIR) $(SO) $(SO)/translator.so
+all: python_libs $(PLUGIN_DIR) $(SO) $(SO)/translator.so
 	cp -fv $(SO)/translator.so $(PLUGIN_DIR)/translator.so
+
+python_libs:
+	sudo cp -v python/apertiumFiles.py $(PYTHONDIR)
+	sudo cp -v python/apertiumInterfaceAPY.py $(PYTHONDIR)
 
 $(PLUGIN_DIR):
 	mkdir -p $(PLUGIN_DIR)
@@ -36,7 +41,7 @@ $(SO):
 	mkdir -p $(SO)
 
 $(SO)/translator.so: $(OBJ) $(SRC)/translator.c $(OBJ)/python_interface.o $(OBJ)/notifications.o
-	gcc -shared -o $(SO)/translator.so $(SRC)/translator.c $(OBJ)/python_interface.o $(OBJ)/notifications.o -I $(INC) $(LIBPYTHON) $(LIBPURPLE) $(GLIB_CFLAGS)
+	gcc -fPIC -shared -o $(SO)/translator.so $(SRC)/translator.c $(OBJ)/python_interface.o $(OBJ)/notifications.o -I $(INC) $(LIBPYTHON) $(LIBPURPLE) $(GLIB_CFLAGS)
 
 $(OBJ):
 	mkdir -p $(OBJ)
