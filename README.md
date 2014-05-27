@@ -2,6 +2,7 @@ Pidgin Translator Plugin
 ========================
 
 Pidgin plugin to translate incoming and outgoing messages with the help of the software developed by the [Apertium](http://www.apertium.org/ "Apertium") project team.
+
 This plugin is currently still not finished and, therefore, some things are still subject to change.
 
 ###What it does
@@ -12,7 +13,7 @@ The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "
 
 ###Compilation Requirements
 
-* **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial").
+* **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial") ).
 * **glib2.0.** Install package libglib2.0
 * **Python 2.7.**
 * **(Optional)[Apertium-apy](http://wiki.apertium.org/wiki/Apy "Apertium-apy").** Needed if you intend to run your own apy in your machine.
@@ -26,6 +27,10 @@ After that, run
 * make
 
 and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins). Note that a few commands from the Makefile are run with sudo.
+
+To create the doxygen documentation (html and latex), run
+
+* make doc
 
 ###Plugin commands
 

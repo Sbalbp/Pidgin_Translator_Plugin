@@ -24,6 +24,7 @@ PYTHONDIR = /usr/lib/python2.7
 INC = include
 SRC = src
 OBJ = obj
+DOC = doc
 SO = so
 PLUGIN_DIR = ~/.purple/plugins
 
@@ -53,3 +54,16 @@ $(OBJ)/python_interface.o: $(SRC)/python_interface.c $(INC)/python_interface.h
 $(OBJ)/notifications.o: $(SRC)/notifications.c $(INC)/notifications.h
 	gcc -c -o $(OBJ)/notifications.o $(SRC)/notifications.c -I $(INC) $(LIBPURPLE) $(GLIB_CFLAGS)
 
+doc:
+	doxygen
+	cd $(DOC)/latex && make && cd ../..
+
+clean:
+	rm -rf $(SO)
+	rm -rf $(OBJ)
+
+cleandoc:
+	rm -rf $(DOC)/html
+	rm -rf $(DOC)/latex
+
+.PHONY: doc clean cleandoc
