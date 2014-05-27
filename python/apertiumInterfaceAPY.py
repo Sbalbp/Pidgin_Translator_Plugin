@@ -22,7 +22,10 @@
 ## @package apertiumInterfaceAPY
 # Acts as an interface with an Apertium-APY
 
-import urllib2
+try:
+    import urllib.request as urllib2
+except:
+	import urllib2
 import json
 
 ## Address of the Apertium-APY
