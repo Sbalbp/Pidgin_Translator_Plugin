@@ -25,15 +25,23 @@ The translating is done by an <a href="http://wiki.apertium.org/wiki/Apy">Aperti
 
 <h3><b>Compiling and installing</b></h3>
 
-For now, it might be necessary to 'manually' change some settings in the Makefile in order for the plugin to compile. Specifically, the <b>LIBPURPLE</b> and <b>PYTHONDIR</b> variables, which contain the route where your copy of libpurple is located and the route where your python2.7 modules are stored (generally, /usr/lib/pythonX.Y), respectively.
+For now, it might be necessary to 'manually' change some settings in the src/Makefile.am in order for the plugin to compile. Specifically, the <b>AM_PYTHONDIR</b> variable, which contains the route where your python2.7 modules are stored (generally, /usr/lib/python2.7).
 
 After that, run
+
+<ul>
+<li>./autogen.sh</li>
+</ul>
+
+which will generate the Makefile, and after that
 
 <ul>
 <li>make</li>
 </ul>
 
 and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins). Note that a few commands from the Makefile are run with sudo.
+
+It will also generate the documentation in the doc folder.
 
 <h3><b>Plugin commands</b></h3>
 

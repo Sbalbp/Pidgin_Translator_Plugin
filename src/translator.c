@@ -495,7 +495,7 @@ static PurplePluginInfo info =
 
 	PLUGIN_ID,
 	"Message translator",
-	"1.0",
+	"0.1.0",
 	"Translates incoming messages using Apertium.",
 	"Translates incoming messages using Apertium.",
 	"Sergio Balbuena <sbalbp@gmail.com>",

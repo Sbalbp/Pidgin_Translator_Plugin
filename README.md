@@ -20,17 +20,19 @@ The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "
 
 ###Compiling and installing
 
-For now, it might be necessary to 'manually' change some settings in the Makefile in order for the plugin to compile. Specifically, the **LIBPURPLE** and **PYTHONDIR** variables, which contain the route where your copy of libpurple is located and the route where your python2.7 modules are stored (generally, /usr/lib/pythonX.Y), respectively.
+For now, it might be necessary to 'manually' change some settings in the src/Makefile.am in order for the plugin to compile. Specifically, the **AM_PYTHONDIR** variable, which contains the route where your python2.7 modules are stored (generally, /usr/lib/python2.7).
 
 After that, run
+
+* ./autogen.sh
+
+which will generate the Makefile, and after that
 
 * make
 
 and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins). Note that a few commands from the Makefile are run with sudo.
 
-To create the doxygen documentation (html and latex), run
-
-* make doc
+It will also generate the documentation in the doc folder.
 
 ###Plugin commands
 
