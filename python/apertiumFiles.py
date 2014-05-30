@@ -28,7 +28,7 @@ import os.path
 ## Dictionary which contains the user-language_pair bindings
 #
 # The dictionary has the following structure:<br>
-# { <b>'incoming'</b> : { <var>user1, user2, ...., userN</var> } , <b>'outgoing'</b>: { <var>user1, user2, ...., userN</var> } }<br>
+# { <b>'apyAddress'</b> : 'address to make requests to' , <b>'incoming'</b> : { <var>user1, user2, ...., userN</var> } , <b>'outgoing'</b>: { <var>user1, user2, ...., userN</var> } }<br>
 # The structure for each <var>userN</var>:<br>
 # { <b>'name'</b> : { <b>'source'</b> : <var>source_language_str</var> , <b>'target'</b> : <var>target_language_str</var> } }
 dictionary = None
@@ -42,7 +42,7 @@ fileName = 'apertium_plugin_pairs_preferences.pkl'
 def createDictionary():
 	global dictionary
 
-	dictionary = {'incoming':{}, 'outgoing':{}}
+	dictionary = {'apyAddress':'http://localhost:2737', 'incoming':{}, 'outgoing':{}}
 
 	file1 = open(fileName, 'wb')
 
@@ -80,6 +80,9 @@ def save():
 # @return The dictionary
 def getDictionary():
 	global dictionary
+
+	if(dictionary is None):
+		read()
 
 	return dictionary
 

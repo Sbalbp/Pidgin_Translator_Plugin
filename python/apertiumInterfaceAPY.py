@@ -27,11 +27,12 @@ try:
 except:
 	import urllib2
 import json
+import apertiumFiles
 
 ## Address of the Apertium-APY
-apyAddress = 'http://localhost:2737'
+apyAddress = apertiumFiles.getDictionary()['apyAddress']
 
-## Checks whether an APY server is running in the address given
+## Checks whether an APY server is running in the given address or not
 #
 # @param address Address to be checked
 # @return True if there was a response from the server, False otherwise
@@ -67,6 +68,13 @@ def setAPYAddress(newAddress, newPort):
 
 	if(checkAPY(newAddress)):
 		apyAddress = newAddress
+
+		# The address change must also be applied to the file so that it is remembered next time
+		dictionary = apertiumFiles.getDictionary()
+		dictionary['apyAddress'] = newAddress
+		apertiumFiles.setDictionary(dictionary)
+		apertiumFiles.save()
+
 		return True
 	else:
 		return False
