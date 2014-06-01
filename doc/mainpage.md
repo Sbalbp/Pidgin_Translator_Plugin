@@ -18,22 +18,22 @@ The translating is done by an <a href="http://wiki.apertium.org/wiki/Apy">Aperti
 
 <li><b>glib2.0.</b> Install package libglib2.0</li>
 
-<li><b>Python 2.7.</b></li>
+<li><b>Python.</b> Install package python-dev</li>
 
 <li><b>(Optional) <a href="http://wiki.apertium.org/wiki/Apy">Apertium-apy</a>.</b> Needed if you intend to run your own apy in your machine.</li>
 </ul>
 
 <h3><b>Compiling and installing</b></h3>
 
-For now, it might be necessary to 'manually' change some settings in the src/Makefile.am in order for the plugin to compile. Specifically, the <b>AM_PYTHONDIR</b> variable, which contains the route where your python2.7 modules are stored (generally, /usr/lib/python2.7).
-
-After that, run
+To begin with, run
 
 <ul>
 <li>./autogen.sh</li>
 </ul>
 
-which will generate the Makefile, and after that
+which will generate the Makefile. It will also attempt to find out what your installed version of python is and change the Makefile accordingly. It is assumed by default that your python version is 2.7.
+
+Now run
 
 <ul>
 <li>make</li>

@@ -23,7 +23,7 @@
 AC_PREREQ([2.68])
 AC_INIT(pidgin_apertium_plugin, 0.1.0, sbalbp@gmail.com)
 AM_INIT_AUTOMAKE(pidgin_apertium_plugin, 0.1.0)
-AC_CONFIG_SRCDIR([src/translator.c])
+AC_CONFIG_SRCDIR([src/py2/translator.c],[src/py3/translator.c])
 
 # Checks for programs.
 AC_PROG_CC

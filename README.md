@@ -15,18 +15,18 @@ The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "
 
 * **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial") ).
 * **glib2.0.** Install package libglib2.0
-* **Python 2.7.**
+* **Python.** Install package python-dev
 * **(Optional)[Apertium-apy](http://wiki.apertium.org/wiki/Apy "Apertium-apy").** Needed if you intend to run your own apy in your machine.
 
 ###Compiling and installing
 
-For now, it might be necessary to 'manually' change some settings in the src/Makefile.am in order for the plugin to compile. Specifically, the **AM_PYTHONDIR** variable, which contains the route where your python2.7 modules are stored (generally, /usr/lib/python2.7).
-
-After that, run
+To begin with, run
 
 * ./autogen.sh
 
-which will generate the Makefile, and after that
+which will generate the Makefile. It will also attempt to find out what your installed version of python is and change the Makefile accordingly. It is assumed by default that your python version is 2.7.
+
+Now run
 
 * make
 

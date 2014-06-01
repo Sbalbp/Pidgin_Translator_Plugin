@@ -26,8 +26,12 @@ try:
     import urllib.request as urllib2
 except:
 	import urllib2
+import sys
 import json
 import apertiumFiles
+
+## Python version running the module
+pyVersion = sys.version_info[0]
 
 ## Address of the Apertium-APY
 apyAddress = apertiumFiles.getDictionary()['apyAddress']
@@ -37,6 +41,13 @@ apyAddress = apertiumFiles.getDictionary()['apyAddress']
 # @param address Address to be checked
 # @return True if there was a response from the server, False otherwise
 def checkAPY(address):
+
+	if(pyVersion >= 3):
+		try:
+			address.decode('utf-8')
+		except:
+			pass
+
 	try:
 		request = urllib2.urlopen(address+'/listPairs')
 	except urllib2.URLError:
@@ -52,7 +63,11 @@ def checkAPY(address):
 #
 # @return A string with the current APY address
 def getAPYAddress():
-	return apyAddress
+	if(pyVersion >= 3):
+		return apyAddress.encode('utf-8')
+	else:
+		return apyAddress
+
 
 ## Changes the address where request to the APY will be sent
 #
@@ -62,6 +77,17 @@ def getAPYAddress():
 # @return True if the new address was set, False otherwise
 def setAPYAddress(newAddress, newPort):
 	global apyAddress
+
+	if(pyVersion >= 3):
+		try:
+			newAddress = newAddress.decode('utf-8')
+		except:
+			pass
+		if(newPort is not None):
+			try:
+				newPort = newPort.decode('utf-8')
+			except:
+				pass
 
 	if(newPort is not None):
 		newAddress = newAddress+':'+newPort
@@ -92,12 +118,16 @@ def getAllPairs():
 	try:
 		request = urllib2.urlopen(apyAddress+'/listPairs')
 	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 
 	if(request.getcode() < 300):
-		jsonObj = json.load(request)
+		if(pyVersion >= 3):
+			request = request.read().decode("utf-8")
+			jsonObj = json.loads(request)
+		else:
+			jsonObj = json.load(request)
 
 		for pair in jsonObj['responseData']:
 			pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
@@ -105,7 +135,7 @@ def getAllPairs():
 		return {'ok':True, 'result':pairs}
 
 	else:
-		return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
+		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
 
 ## Retrieves a list with all the available language pairs that share a common source language
 #
@@ -118,15 +148,25 @@ def getAllPairs():
 def getPairsBySource(source):
 	pairs = []
 
+	if(pyVersion >= 3):
+		try:
+			source = source.decode("utf-8")
+		except:
+			pass
+
 	try:
 		request = urllib2.urlopen(apyAddress+'/listPairs')
 	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 
 	if(request.getcode() < 300):
-		jsonObj = json.load(request)
+		if(pyVersion >= 3):
+			request = request.read().decode("utf-8")
+			jsonObj = json.loads(request)
+		else:
+			jsonObj = json.load(request)
 
 		for pair in jsonObj['responseData']:
 			if(pair['sourceLanguage'] == source):
@@ -135,7 +175,7 @@ def getPairsBySource(source):
 		return {'ok':True, 'result':pairs}
 
 	else:
-		return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
+		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
 
 ## Retrieves a list with all the available language pairs that share a common target language
 #
@@ -148,15 +188,25 @@ def getPairsBySource(source):
 def getPairsByTarget(target):
 	pairs = []
 
+	if(pyVersion >= 3):
+		try:
+			target = target.decode("utf-8")
+		except:
+			pass
+
 	try:
 		request = urllib2.urlopen(apyAddress+'/listPairs')
 	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 
 	if(request.getcode() < 300):
-		jsonObj = json.load(request)
+		if(pyVersion >= 3):
+			request = request.read().decode("utf-8")
+			jsonObj = json.loads(request)
+		else:
+			jsonObj = json.load(request)
 
 		for pair in jsonObj['responseData']:
 			if(pair['targetLanguage'] == target):
@@ -165,7 +215,7 @@ def getPairsByTarget(target):
 		return {'ok':True, 'result':pairs}
 
 	else:
-		return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
+		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
 
 ## Checks if a given language pair is available
 #
@@ -178,15 +228,29 @@ def getPairsByTarget(target):
 def pairExists(source, target):
 	pairs = []
 
+	if(pyVersion >= 3):
+		try:
+			source = source.decode('utf-8')
+		except:
+			pass
+		try:
+			target = target.decode('utf-8')
+		except:
+			pass
+
 	try:
 		request = urllib2.urlopen(apyAddress+'/listPairs')
 	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'}
+		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 
 	if(request.getcode() < 300):
-		jsonObj = json.load(request)
+		if(pyVersion >= 3):
+			request = request.read().decode("utf-8")
+			jsonObj = json.loads(request)
+		else:
+			jsonObj = json.load(request)
 
 		for pair in jsonObj['responseData']:
 			if(pair['sourceLanguage'] == source and pair['targetLanguage'] == target):
@@ -195,7 +259,7 @@ def pairExists(source, target):
 		return {'ok':True, 'result':False}
 
 	else:
-		return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
+		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
 
 ## Translates a given text
 #
@@ -209,25 +273,43 @@ def pairExists(source, target):
 def translate(text, source, target):
 	result = pairExists(source, target)
 
+	if(pyVersion >= 3):
+		try:
+			text = text.decode("utf-8")
+		except:
+			pass
+		try:
+			source = source.decode("utf-8")
+		except:
+			pass
+		try:
+			target = target.decode("utf-8")
+		except:
+			pass
+
 	if(result['ok']):
 		if(result['result']):
 
 			try:
 				request = urllib2.urlopen((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
 			except urllib2.URLError:
-				return {'ok':False, 'errorMsg':'Error on connection'}
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 			except urllib2.HTTPError:
-				return {'ok':False, 'errorMsg':'Error on connection'}
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 
 			if(request.getcode() < 300):
-				jsonObj = json.load(request)
+				if(pyVersion >= 3):
+					request = request.read().decode("utf-8")
+					jsonObj = json.loads(request)
+				else:
+					jsonObj = json.load(request)
 
-				return {'ok':True, 'result':jsonObj['responseData']['translatedText']}
+				return {'ok':True, 'result':jsonObj['responseData']['translatedText'].encode('utf-8')}
 
 			else:
 				return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
 
 		else:
-			return {'ok':False, 'errorMsg':'Pair '+source+'-'+target+' does not exist'}
+			return {'ok':False, 'errorMsg':('Pair '+source+'-'+target+' does not exist').encode('utf-8')}
 	else:
 		return result

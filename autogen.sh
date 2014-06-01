@@ -17,4 +17,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+PYV1=`python -c 'import sys; print(sys.version_info[0])'`
+PYV2=`python -c 'import sys; print(sys.version_info[1])'`
+
+sed -i "s/AM_PYV1=.*/AM_PYV1=$PYV1/g" src/Makefile.am
+sed -i "s/AM_PYV2=.*/AM_PYV2=$PYV2/g" src/Makefile.am
+
 autoreconf -fi && ./configure

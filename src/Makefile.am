@@ -17,9 +17,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-AM_PYTHONDIR = /usr/lib/python2.7
-AM_PURPLE_GLIB_CFLAGS = `pkg-config --libs --cflags purple`
-AM_PYTHON_CFLAGS = `pkg-config --libs --cflags python2`
+AM_PYV1=2
+AM_PYV2=7
+AM_PYTHONDIR = /usr/lib/python$(AM_PYV1).$(AM_PYV2)
+AM_PURPLE_GLIB_CFLAGS =`pkg-config --libs --cflags purple`
+AM_PYTHON_CFLAGS =`pkg-config --libs --cflags python$$AM_PYV1`
 AM_PY = $(top_builddir)/python
 AM_INC = $(top_builddir)/include
 AM_SRC = $(top_builddir)/src
@@ -37,8 +39,8 @@ python_libs:
 $(PLUGIN_DIR):
 	$(MKDIR_P) $(AM_PLUGIN_DIR)
 
-$(AM_SO)/translator.so: $(AM_SO) $(AM_OBJ) $(AM_SRC)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o
-	$(CC) -fPIC $(DEFS) -shared -o $(AM_SO)/translator.so $(AM_SRC)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o -I $(AM_INC) $(AM_PYTHON_CFLAGS) $(AM_PURPLE_GLIB_CFLAGS)
+$(AM_SO)/translator.so: $(AM_SO) $(AM_OBJ) $(AM_SRC)/py$(AM_PYV1)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o
+	$(CC) -fPIC $(DEFS) -shared -o $(AM_SO)/translator.so $(AM_SRC)/py$(AM_PYV1)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o -I $(AM_INC) $(AM_PYTHON_CFLAGS) $(AM_PURPLE_GLIB_CFLAGS)
 
 $(AM_SO):
 	$(MKDIR_P) $(AM_SO)
@@ -46,8 +48,8 @@ $(AM_SO):
 $(AM_OBJ):
 	$(MKDIR_P) $(AM_OBJ)
 
-$(AM_OBJ)/python_interface.o: $(AM_SRC)/python_interface.c $(AM_INC)/python_interface.h
-	$(CC) -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS)
+$(AM_OBJ)/python_interface.o: $(AM_SRC)/py$(AM_PYV1)/python_interface.c $(AM_INC)/python_interface.h
+	$(CC) -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/py$(AM_PYV1)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS)
 
 $(AM_OBJ)/notifications.o: $(AM_SRC)/notifications.c $(AM_INC)/notifications.h
 	$(CC) -c -o $(AM_OBJ)/notifications.o $(AM_SRC)/notifications.c -I $(AM_INC) $(AM_PURPLE_GLIB_CFLAGS)
