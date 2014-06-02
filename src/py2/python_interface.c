@@ -52,7 +52,7 @@ void pythonInit(){
     Py_Initialize();
     PySys_SetArgv(0, args);
 
-    pName = (PyObject*)PyString_FromString("apertiumFiles");
+    pName = (PyObject*)PyString_FromString("apertiumpluginutils.apertiumFiles");
 
     files_module = PyImport_Import(pName);
     Py_DECREF(pName);
@@ -75,7 +75,7 @@ void pythonInit(){
         return;
     }
 
-    pName = (PyObject*)PyString_FromString("apertiumInterfaceAPY");
+    pName = (PyObject*)PyString_FromString("apertiumpluginutils.apertiumInterfaceAPY");
 
     iface_module = PyImport_Import(pName);
     Py_DECREF(pName);

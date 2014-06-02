@@ -17,5 +17,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-AUTOMAKE_OPTIONS = foreign
-SUBDIRS = doc src python
+all-local:
+	sudo python setup.py install
+
+clean-local:
+	python setup.py clean

@@ -52,7 +52,7 @@ void pythonInit(){
     Py_Initialize();
     PySys_SetArgv(0, args);
 
-    files_module = PyImport_ImportModule("apertiumFiles");
+    files_module = PyImport_ImportModule("apertiumpluginutils.apertiumFiles");
 
     if (files_module != NULL) {
         pFunc = PyObject_GetAttrString(files_module, "read");
@@ -72,7 +72,7 @@ void pythonInit(){
         return;
     }
 
-    iface_module = PyImport_ImportModule("apertiumInterfaceAPY");
+    iface_module = PyImport_ImportModule("apertiumpluginutils.apertiumInterfaceAPY");
 
     if (iface_module == NULL) {
         notify_error("Failed to load module: \'apertiumInterfaceAPY\'");

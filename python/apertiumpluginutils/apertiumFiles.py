@@ -19,7 +19,7 @@
 
 #!/usr/bin/env python
 
-## @package apertiumFiles
+## @file apertiumFiles.py
 # Manages the files and dictionary used with the plugin
 
 import pickle

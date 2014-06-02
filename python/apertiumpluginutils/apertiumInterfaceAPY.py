@@ -19,7 +19,7 @@
 
 #!/usr/bin/env python
 
-## @package apertiumInterfaceAPY
+## @file apertiumInterfaceAPY.py
 # Acts as an interface with an Apertium-APY
 
 try:
@@ -28,7 +28,7 @@ except:
 	import urllib2
 import sys
 import json
-import apertiumFiles
+import apertiumpluginutils.apertiumFiles as apertiumFiles
 
 ## Python version running the module
 pyVersion = sys.version_info[0]

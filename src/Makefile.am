@@ -29,12 +29,8 @@ AM_OBJ = $(top_builddir)/obj
 AM_SO = $(top_builddir)/so
 AM_PLUGIN_DIR = ~/.purple/plugins
 
-all-local: python_libs $(AM_PLUGIN_DIR) $(AM_SO) $(AM_SO)/translator.so
+all-local: $(AM_PLUGIN_DIR) $(AM_SO) $(AM_SO)/translator.so
 	cp -fv $(AM_SO)/translator.so $(AM_PLUGIN_DIR)/translator.so
-
-python_libs:
-	sudo cp -v $(AM_PY)/apertiumFiles.py $(AM_PYTHONDIR)
-	sudo cp -v $(AM_PY)/apertiumInterfaceAPY.py $(AM_PYTHONDIR)
 
 $(PLUGIN_DIR):
 	$(MKDIR_P) $(AM_PLUGIN_DIR)
