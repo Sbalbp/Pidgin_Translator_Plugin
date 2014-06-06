@@ -23,7 +23,7 @@ void pythonInit();
 
 void pythonFinalize();
 
-PyObject* getAPYAddress();
+char* getAPYAddress();
 
 int setAPYAddress(char* address, char* port);
 
@@ -33,8 +33,8 @@ PyObject* setDictionary(PyObject* item);
 
 void saveDictionary();
 
-PyObject* getAllPairs();
+int getAllPairs(char**** pairList);
 
 int pairExists(char* source, char* target);
 
-PyObject* translate(char* text, PyObject *source, PyObject *target);
+char* translate(char* text, PyObject *source, PyObject *target);

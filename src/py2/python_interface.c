@@ -96,12 +96,13 @@ void pythonFinalize(){
 }
 
 /**
- * @brief Retrieves a Python string containing the Apertium-APY current address
+ * @brief Retrieves a string containing the Apertium-APY current address
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
- * @return The address (as a PyObject-string) if the call was successful, or Py_None otherwise
+ * @return The address if the call was successful, or NULL otherwise
  */
-PyObject* getAPYAddress(){
+char* getAPYAddress(){
+    char *address;
     PyObject *pFunc, *pArgs, *result;
 
     if (iface_module != NULL) {
@@ -113,21 +114,24 @@ PyObject* getAPYAddress(){
             result = PyObject_CallObject(pFunc, pArgs);
 
             if (result != NULL) {
-                return result;
+                address = PyString_AsString(result);
+                Py_DECREF(pFunc);
+                Py_XDECREF(result);
+                return address;
             }
             else {
                 Py_DECREF(pFunc);
-                return Py_None;
+                return NULL;
             }
         }
         else {
-            return Py_None;
+            return NULL;
         }
         Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return Py_None;
+        return NULL;
     }
 }
 
@@ -284,14 +288,15 @@ void saveDictionary(){
  * @brief Retrieves a list of all the available language pairs
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded).
- * @return A Python list (as a PyObject) if the call was successful, or Py_None otherwise<br>
- * On success, the format of the list is:<br>
- * [<var>pair0, pair1, ...., pairN</var>]<br>
- * Each <var>pairN</var> is a list with the format:<br>
- * [<var>source language</var>, <var>target language</var>]
+ * @param pairList Reference to a 3-level char pointer where the pairs will be stored. <br>
+ * Pair 'n' is stored in pairList[n] and its two languages are pairList[n][0] (source) and pairList[n][1] (target). <br>
+ * Both pairList[x] and pairList must be freed after its use.
+ * @return Number of language pairs if the call was successful, or 0 otherwise<br>
  */
-PyObject* getAllPairs(){
-    PyObject *pFunc, *pArgs, *pArg, *result;
+int getAllPairs(char**** pairList){
+    int i, size;
+    PyObject *pFunc, *pArgs, *pArg, *result, *list;
+    char *cad;
 
     if (iface_module != NULL) {
         pFunc = PyObject_GetAttrString(iface_module, "getAllPairs");
@@ -303,27 +308,41 @@ PyObject* getAllPairs(){
 
             if (result != NULL) {
                 if(PyDict_GetItemString(result,"ok") == Py_True){
-                    return PyDict_GetItemString(result,"result");
+                    list = PyDict_GetItemString(result,"result");
+                    size = PyList_GET_SIZE(list);
+
+                    *pairList = malloc(sizeof(char**)*size);
+                    for(i=0; i<size; i++){
+                        (*pairList)[i] = malloc(sizeof(char*)*2);
+                        (*pairList)[i][0] = PyString_AsString(PyList_GetItem(PyList_GetItem(list,i),0));
+                        (*pairList)[i][1] = PyString_AsString(PyList_GetItem(PyList_GetItem(list,i),1));
+                    }
+
+                    Py_XDECREF(pFunc);
+                    Py_XDECREF(result);
+                    Py_XDECREF(list);
+                    return size;
                 }
                 else{
+                    Py_XDECREF(pFunc);
                     notify_error(PyString_AsString(PyDict_GetItemString(result,"errorMsg")));
-                    return Py_None;
+                    return 0;
                 }
             }
             else {
                 Py_DECREF(pFunc);
-                return Py_None;
+                return 0;
             }
         }
         else {
             Py_XDECREF(pFunc);
-            return Py_None;
+            return 0;
         }
         Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return Py_None;
+        return 0;
     }
 }
 
@@ -392,9 +411,10 @@ int pairExists(char* source, char* target){
  * @param text String containing the text to be translated
  * @param source String containing the source language to translate the text from
  * @param target String containing the target language to translate the text to
- * @return A Python string (as a PyObject)  containing the translated text if the call was successful, or "Error in translation" otherwise
+ * @return A string containing the translated text if the call was successful, or "Error in translation" otherwise
  */
-PyObject* translate(char* text, PyObject *source, PyObject *target){
+char* translate(char* text, PyObject *source, PyObject *target){
+    char* translation;
     PyObject *pFunc, *pArgs, *pArg, *result;
 
     if (iface_module != NULL) {
@@ -413,26 +433,31 @@ PyObject* translate(char* text, PyObject *source, PyObject *target){
             result = PyObject_CallObject(pFunc, pArgs);
 
             if (result != NULL) {
+                Py_DECREF(pFunc);
                 if(PyDict_GetItemString(result,"ok") == Py_True){
-                    return PyDict_GetItemString(result,"result");
+                    translation = PyString_AsString(PyDict_GetItemString(result,"result"));
+                    Py_DECREF(result);
+
+                    return translation;
                 }
                 else{
                     notify_error(PyString_AsString(PyDict_GetItemString(result,"errorMsg")));
-                    return PyString_FromString("Error in translation");
+                    return "Error in translation";
                 }
             }
             else {
                 Py_DECREF(pFunc);
                 notify_error("There was an error in the translate call");
-                return PyString_FromString("Error in translation");
+                return "Error in translation";
             }
         }
         else {
+            return "Error in translation";
         }
         Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return PyString_FromString("Error in translation");
+        return "Error in translation";
     }
 }

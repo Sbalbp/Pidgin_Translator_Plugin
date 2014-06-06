@@ -86,7 +86,8 @@ PurpleCmdId apy_args_command_id;
  * @param key String indicating which entry to check in the dictionary. Must be "incoming" or "outgoing"
  */
 void translate_message(char **message, PyObject *dictionary, PurpleBuddy *buddy, const char *key){
-    PyObject *translation, *user;
+    char *translation;
+    PyObject *user;
 
     if(PyDict_Contains(PyDict_GetItemString(dictionary, key), PyUnicode_FromString(purple_buddy_get_name(buddy)))){
         char* oldMsg = malloc(sizeof(char)*(strlen(*message)+1));
@@ -98,8 +99,8 @@ void translate_message(char **message, PyObject *dictionary, PurpleBuddy *buddy,
             PyDict_GetItemString(user,"source"),
             PyDict_GetItemString(user,"target"));
 
-        *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(PyBytes_AsString(translation))+21));
-        sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,PyBytes_AsString(translation));
+        *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
+        sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,translation);
     }
 }
 
@@ -207,11 +208,10 @@ PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
  */
 PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
-    int i;
-    char *title, *text;
-    PyObject *pairsList;
+    int i, size;
+    char *title, *text, ***pairsList;
 
-    if((pairsList = getAllPairs()) == Py_None){
+    if(!(size = getAllPairs(&pairsList))){
         return PURPLE_CMD_RET_FAILED;
     }
 
@@ -222,16 +222,18 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
     sprintf(text,"");
 
 
-    for(i=0; i<PyList_GET_SIZE(pairsList); i++){
-        sprintf(text,"%s%s - %s\n",text,
-            PyBytes_AsString(PyList_GetItem(PyList_GetItem(pairsList,i),0)),
-            PyBytes_AsString(PyList_GetItem(PyList_GetItem(pairsList,i),1)));
+    for(i=0; i<size; i++){
+        sprintf(text,"%s%s - %s\n", text, pairsList[i][0], pairsList[i][1]);
     }
 
     sprintf(text,"%s\0", text);
 
     notify_info(title, text);
 
+    for(i=0; i<size; i++){
+        free(pairsList[i]);
+    }
+    free(pairsList);
     free(title);
     free(text);
 
@@ -300,15 +302,13 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
  */
 PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
-    PyObject *address;
+    char *address;
 
-    if((address = getAPYAddress()) == Py_None){
-        notify_error("returned pynone");
+    if((address = getAPYAddress()) == NULL){
         return PURPLE_CMD_RET_FAILED;
     }
     else{
-        notify_info("APY address",PyBytes_AsString(address));
-        Py_XDECREF(address);
+        notify_info("APY address",address);
 
         return PURPLE_CMD_RET_OK;
     }
@@ -496,8 +496,8 @@ static PurplePluginInfo info =
 	PLUGIN_ID,
 	"Message translator",
 	"0.1.0",
-	"Translates incoming messages using Apertium.",
-	"Translates incoming messages using Apertium.",
+	"Translates incoming messages using Apertium and python 3.",
+	"Translates incoming messages using Apertium and python 3.",
 	"Sergio Balbuena <sbalbp@gmail.com>",
 	"",
 

@@ -23,6 +23,7 @@
 # Manages the files and dictionary used with the plugin
 
 import pickle
+import sys
 import os.path
 
 ## Dictionary which contains the user-language_pair bindings
@@ -42,7 +43,7 @@ fileName = 'apertium_plugin_pairs_preferences.pkl'
 def createDictionary():
 	global dictionary
 
-	dictionary = {'apyAddress':'http://localhost:2737', 'incoming':{}, 'outgoing':{}}
+	dictionary = {'version':sys.version_info[0], 'apyAddress':'http://localhost:2737', 'incoming':{}, 'outgoing':{}}
 
 	file1 = open(fileName, 'wb')
 
