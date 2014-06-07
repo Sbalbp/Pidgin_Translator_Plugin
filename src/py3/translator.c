@@ -81,23 +81,22 @@ PurpleCmdId apy_args_command_id;
  *
  * *message is reallocated and modified to contain both the original message and its translation
  * @param message Reference to the text string to be translated
- * @param dictionary PyObject containing the dictionary with the user-language_pair bindings
  * @param buddy Buddy to check user-language_pair binding for
  * @param key String indicating which entry to check in the dictionary. Must be "incoming" or "outgoing"
  */
-void translate_message(char **message, PyObject *dictionary, PurpleBuddy *buddy, const char *key){
+void translate_message(char **message, PurpleBuddy *buddy, const char *key){
+    const char *username;
     char *translation;
-    PyObject *user;
 
-    if(PyDict_Contains(PyDict_GetItemString(dictionary, key), PyUnicode_FromString(purple_buddy_get_name(buddy)))){
+    username = purple_buddy_get_name(buddy);
+
+    if(dictionaryHasUser(username, key)){
         char* oldMsg = malloc(sizeof(char)*(strlen(*message)+1));
         sprintf(oldMsg,"%s\0",*message);
 
-        user = PyDict_GetItemString(PyDict_GetItemString(dictionary, key),purple_buddy_get_name(buddy));
-
         translation = translate(*message,
-            PyDict_GetItemString(user,"source"),
-            PyDict_GetItemString(user,"target"));
+            dictionaryGetUserLanguage(username, key, "source"),
+            dictionaryGetUserLanguage(username, key, "target"));
 
         *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
         sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,translation);
@@ -156,32 +155,29 @@ int parse_set_arguments(char* args, char **command, char** source, char** target
 PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     char *title, *text;
-    PyObject *dictionary;
+    const char *username;
     PurpleBuddy *buddy;
-
-    if((dictionary = getDictionary()) == Py_None){
-        return PURPLE_CMD_RET_FAILED;
-    }
 
     title = malloc(sizeof(char)*100);
     text = malloc(sizeof(char)*300);
 
     buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
+    username = purple_buddy_get_name(buddy);
 
     sprintf(title,"Pairs for \'%s\'\0", purple_buddy_get_name(buddy));
 
-    if(PyDict_Contains(PyDict_GetItemString(dictionary, "incoming"),PyUnicode_FromString(purple_buddy_get_name(buddy)))){
+    if(dictionaryHasUser(username, "incoming")){
         sprintf(text,"Incoming messages: %s - %s\n",
-            PyBytes_AsString(PyDict_GetItemString(PyDict_GetItemString(PyDict_GetItemString(dictionary, "incoming"),purple_buddy_get_name(buddy)),"source")),
-            PyBytes_AsString(PyDict_GetItemString(PyDict_GetItemString(PyDict_GetItemString(dictionary, "incoming"),purple_buddy_get_name(buddy)),"target")));
+            dictionaryGetUserLanguage(username, "incoming", "source"),
+            dictionaryGetUserLanguage(username, "incoming", "target"));
     }
     else{
         sprintf(text,"Incoming messages: None\n");
     }
-    if(PyDict_Contains(PyDict_GetItemString(dictionary, "outgoing"),PyUnicode_FromString(purple_buddy_get_name(buddy)))){
+    if(dictionaryHasUser(username, "outgoing")){
         sprintf(text,"%sOutgoing messages: %s - %s\0", text,
-            PyBytes_AsString(PyDict_GetItemString(PyDict_GetItemString(PyDict_GetItemString(dictionary, "outgoing"),purple_buddy_get_name(buddy)),"source")),
-            PyBytes_AsString(PyDict_GetItemString(PyDict_GetItemString(PyDict_GetItemString(dictionary, "outgoing"),purple_buddy_get_name(buddy)),"target")));
+            dictionaryGetUserLanguage(username, "outgoing", "source"),
+            dictionaryGetUserLanguage(username, "outgoing", "target"));
     }
     else{
         sprintf(text,"%sOutgoing messages: None\0", text);
@@ -253,40 +249,24 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
  */
 PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 								gchar **args, gchar **error, void *data){
-	char *command, *source, *target;
-	PyObject *sourceTargetDict, *dictionary;
-	PurpleBuddy *buddy;
+	const char *username;
+    char *command, *source, *target;
+    PurpleBuddy *buddy;
 
     if(parse_set_arguments(*args,&command,&source,&target)){
+        buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
+        username = purple_buddy_get_name(buddy);
 
-    	buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
-
-    	if((sourceTargetDict = PyDict_New())!=NULL){
-
-    		if((dictionary = getDictionary()) == Py_None){
-        		return PURPLE_CMD_RET_FAILED;
-			}
-
-    		PyDict_SetItemString(sourceTargetDict,"source",PyBytes_FromString(source));
-    		PyDict_SetItemString(sourceTargetDict,"target",PyBytes_FromString(target));
-
-    		PyDict_SetItemString(
-    			PyDict_GetItemString(dictionary, command),
-				purple_buddy_get_name(buddy),sourceTargetDict);
-
-    		setDictionary(dictionary);
-
-			Py_XDECREF(sourceTargetDict);
-
-    		return PURPLE_CMD_RET_OK;
-    	}
-    	else{
-    		return PURPLE_CMD_RET_FAILED;
-    	}
-	}
-	else{
-		return PURPLE_CMD_RET_FAILED;
-	}
+        if(dictionarySetUserEntry(username,command,source,target)){
+            return PURPLE_CMD_RET_OK;
+        }
+        else{
+            return PURPLE_CMD_RET_FAILED;
+        }
+    }
+    else{
+        return PURPLE_CMD_RET_FAILED;
+    }
 }
 
 /**
@@ -358,15 +338,10 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
 void sending_im_msg_cb(PurpleAccount *account, char *recipient, char **message, gpointer handle){
 
     PurpleBuddy *buddy;
-    PyObject *dictionary;
 
     buddy = purple_find_buddy(account, recipient);
 
-    if((dictionary = getDictionary()) == Py_None){
-        return;
-    }
-
-    translate_message(message, dictionary, buddy, "outgoing");
+    translate_message(message, buddy, "outgoing");
 
     return;
 }
@@ -387,17 +362,12 @@ gboolean receiving_im_msg_cb(PurpleAccount *account, char **sender,
                             PurpleMessageFlags *flags, gpointer handle){
 
 	PurpleBuddy *buddy;
-	PyObject *dictionary;
 
-	buddy = purple_find_buddy(account, *sender);
+    buddy = purple_find_buddy(account, *sender);
 
-	if((dictionary = getDictionary()) == Py_None){
-		return TRUE;
-	}
+    translate_message(message, buddy, "incoming");
 
-	translate_message(message, dictionary, buddy, "incoming");
-
-	return FALSE;
+    return FALSE;
 }
 
 /****************************************************************************************************/

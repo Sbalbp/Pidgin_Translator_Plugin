@@ -183,6 +183,83 @@ int setAPYAddress(char* address, char* port){
 }
 
 /**
+ * @brief Checks whether the dictionary contains language pair information for a given user
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param user Name of the user to look for
+ * @param direction Direction to look for the user in ("incoming" or "outgoing")
+ * @return 1 if there is a language pair for the user, or 0 otherwise
+ */
+int dictionaryHasUser(const char* user, const char* direction){
+    PyObject *dictionary;
+
+    if((dictionary = getDictionary()) == Py_None){
+        return 0;
+    }
+
+    return PyDict_Contains(
+            PyDict_GetItemString(dictionary, direction),
+            PyUnicode_FromString(user));
+}
+
+/**
+ * @brief Returns the language stored for a user in the preferences file
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param user Name of the user to look for
+ * @param direction Direction to look for the user in ("incoming" or "outgoing")
+ * @param key Language to look for ("source" or "target")
+ * @return The language if the call was successful, or "None" otherwise
+ */
+char* dictionaryGetUserLanguage(const char *user, const char* direction, const char* key){
+    PyObject *dictionary;
+
+    if((dictionary = getDictionary()) == Py_None){
+        return "None";
+    }
+
+    return PyBytes_AsString(PyDict_GetItemString(
+        PyDict_GetItemString(PyDict_GetItemString(dictionary, direction), user),key));
+}
+
+/**
+ * @brief Creates a new entry in the language pairs dictionary
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param user Name of the user to create a new entry for
+ * @param direction Direction to create a new entry in ("incoming" or "outgoing")
+ * @param source Source language of the language pair
+ * @param target Target language of the language pair
+ * @return 1 on success, or 0 otherwise
+ */
+int dictionarySetUserEntry(const char* user, const char* direction, const char* source, const char* target){
+    PyObject *sourceTargetDict, *dictionary;
+
+    if((sourceTargetDict = PyDict_New())!=NULL){
+
+        if((dictionary = getDictionary()) == Py_None){
+            return 0;
+        }
+
+        PyDict_SetItemString(sourceTargetDict,"source",PyBytes_FromString(source));
+        PyDict_SetItemString(sourceTargetDict,"target",PyBytes_FromString(target));
+
+        PyDict_SetItemString(
+            PyDict_GetItemString(dictionary, direction),
+            user,sourceTargetDict);
+
+        setDictionary(dictionary);
+
+        Py_XDECREF(sourceTargetDict);
+
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+/**
  * @brief Retrieves the Python dictionary containing the user-language_pair settings
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
@@ -406,7 +483,7 @@ int pairExists(char* source, char* target){
  * @param target String containing the target language to translate the text to
  * @return A string containing the translated text if the call was successful, or "Error in translation" otherwise
  */
-char* translate(char* text, PyObject *source, PyObject *target){
+char* translate(char* text, char* source, char* target){
     char* translation;
     PyObject *pFunc, *pArgs, *pArg, *result;
 
@@ -419,9 +496,9 @@ char* translate(char* text, PyObject *source, PyObject *target){
             pArg = PyBytes_FromString(text);
             PyTuple_SetItem(pArgs, 0, pArg);
 
-            PyTuple_SetItem(pArgs, 1, source);
+            PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(source));
 
-            PyTuple_SetItem(pArgs, 2, target);
+            PyTuple_SetItem(pArgs, 2, PyUnicode_FromString(target));
 
             result = PyObject_CallObject(pFunc, pArgs);
 

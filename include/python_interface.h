@@ -27,6 +27,12 @@ char* getAPYAddress();
 
 int setAPYAddress(char* address, char* port);
 
+int dictionaryHasUser(const char* user, const char* direction);
+
+char* dictionaryGetUserLanguage(const char* user, const char* direction, const char* key);
+
+int dictionarySetUserEntry(const char* user, const char* direction, const char* source, const char* target);
+
 PyObject* getDictionary();
 
 PyObject* setDictionary(PyObject* item);
@@ -37,4 +43,4 @@ int getAllPairs(char**** pairList);
 
 int pairExists(char* source, char* target);
 
-char* translate(char* text, PyObject *source, PyObject *target);
+char* translate(char* text, char* source, char* target);
