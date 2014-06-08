@@ -35,8 +35,8 @@ all-local: $(AM_PLUGIN_DIR) $(AM_SO) $(AM_SO)/translator.so
 $(PLUGIN_DIR):
 	$(MKDIR_P) $(AM_PLUGIN_DIR)
 
-$(AM_SO)/translator.so: $(AM_SO) $(AM_OBJ) $(AM_SRC)/py$(AM_PYV1)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o
-	$(CC) -fPIC $(DEFS) -shared -o $(AM_SO)/translator.so $(AM_SRC)/py$(AM_PYV1)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o -I $(AM_INC) $(AM_PYTHON_CFLAGS) $(AM_PURPLE_GLIB_CFLAGS)
+$(AM_SO)/translator.so: $(AM_SO) $(AM_OBJ) $(AM_SRC)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o
+	$(CC) -fPIC $(DEFS) -shared -o $(AM_SO)/translator.so $(AM_SRC)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o -I $(AM_INC) $(AM_PYTHON_CFLAGS) $(AM_PURPLE_GLIB_CFLAGS)
 
 $(AM_SO):
 	$(MKDIR_P) $(AM_SO)

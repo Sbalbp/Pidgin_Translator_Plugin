@@ -249,24 +249,24 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
  */
 PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 								gchar **args, gchar **error, void *data){
-	const char *username;
+    const char *username;
     char *command, *source, *target;
-    PurpleBuddy *buddy;
+	PurpleBuddy *buddy;
 
     if(parse_set_arguments(*args,&command,&source,&target)){
-        buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
+    	buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
         username = purple_buddy_get_name(buddy);
 
-        if(dictionarySetUserEntry(username,command,source,target)){
-            return PURPLE_CMD_RET_OK;
-        }
-        else{
-            return PURPLE_CMD_RET_FAILED;
-        }
-    }
-    else{
-        return PURPLE_CMD_RET_FAILED;
-    }
+    	if(dictionarySetUserEntry(username,command,source,target)){
+    		return PURPLE_CMD_RET_OK;
+    	}
+    	else{
+    		return PURPLE_CMD_RET_FAILED;
+    	}
+	}
+	else{
+		return PURPLE_CMD_RET_FAILED;
+	}
 }
 
 /**
@@ -288,7 +288,7 @@ PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
         return PURPLE_CMD_RET_FAILED;
     }
     else{
-        notify_info("APY address",address);
+        notify_info("APY address", address);
 
         return PURPLE_CMD_RET_OK;
     }
@@ -363,11 +363,11 @@ gboolean receiving_im_msg_cb(PurpleAccount *account, char **sender,
 
 	PurpleBuddy *buddy;
 
-    buddy = purple_find_buddy(account, *sender);
+	buddy = purple_find_buddy(account, *sender);
 
-    translate_message(message, buddy, "incoming");
+	translate_message(message, buddy, "incoming");
 
-    return FALSE;
+	return FALSE;
 }
 
 /****************************************************************************************************/
@@ -466,8 +466,8 @@ static PurplePluginInfo info =
 	PLUGIN_ID,
 	"Message translator",
 	"0.1.0",
-	"Translates incoming messages using Apertium and python 3.",
-	"Translates incoming messages using Apertium and python 3.",
+	"Translates incoming messages using Apertium.",
+	"Translates incoming messages using Apertium.",
 	"Sergio Balbuena <sbalbp@gmail.com>",
 	"",
 
