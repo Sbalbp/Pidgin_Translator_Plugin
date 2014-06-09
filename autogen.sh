@@ -20,7 +20,16 @@
 PYV1=`python -c 'import sys; print(sys.version_info[0])'`
 PYV2=`python -c 'import sys; print(sys.version_info[1])'`
 
+if [ $PYV1 -eq 2 ]
+then
+	PYLIB="python2."$PYV2
+elif [ $PYV1 -eq 3 ]
+then
+	PYLIB="python3."$PYV2"mu"
+fi
+
 sed -i "s/AM_PYV1=.*/AM_PYV1=$PYV1/g" src/Makefile.am
-sed -i "s/AM_PYV2=.*/AM_PYV2=$PYV2/g" src/Makefile.am
+
+sed -i "s/AC_CHECK_LIB(python.*/AC_CHECK_LIB($PYLIB,main,,AC_MSG_ERROR(Cannot find required library $PYLIB.))/g" configure.ac
 
 autoreconf -fi && ./configure

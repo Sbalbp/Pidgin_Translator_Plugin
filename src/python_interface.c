@@ -46,11 +46,9 @@ PyObject *iface_module;
  */
 void pythonInit(){
     PyObject *pFunc, *pArgs;
-    wchar_t** args = malloc(sizeof(char*));
 
     Py_SetProgramName(NULL);
     Py_Initialize();
-    PySys_SetArgv(0, args);
 
     files_module = PyImport_ImportModule("apertiumpluginutils.apertiumFiles");
 
