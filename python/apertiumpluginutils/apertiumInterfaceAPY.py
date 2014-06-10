@@ -28,13 +28,12 @@ except:
 	import urllib2
 import sys
 import json
-import apertiumpluginutils.apertiumFiles as apertiumFiles
 
 ## Python version running the module
 pyVersion = sys.version_info[0]
 
 ## Address of the Apertium-APY
-apyAddress = apertiumFiles.getDictionary()['apyAddress']
+apyAddress = 'http://localhost:2737'
 
 ## Checks whether an APY server is running in the given address or not
 #
@@ -69,13 +68,13 @@ def getAPYAddress():
 		return apyAddress
 
 
-## Changes the address where request to the APY will be sent
+## Changes the address where requests to the APY will be sent
 #
 # The address is only changed if there was a postive checkAPY() response for it
 # @param newAddress New address for the APY
 # @param newPort Port for the APY. None if no port is needed
-# @return True if the new address was set, False otherwise
-def setAPYAddress(newAddress, newPort):
+# @return The new address if it was set, or None otherwise
+def setAPYAddress(newAddress, newPort=None):
 	global apyAddress
 
 	if(pyVersion >= 3):
@@ -95,15 +94,9 @@ def setAPYAddress(newAddress, newPort):
 	if(checkAPY(newAddress)):
 		apyAddress = newAddress
 
-		# The address change must also be applied to the file so that it is remembered next time
-		dictionary = apertiumFiles.getDictionary()
-		dictionary['apyAddress'] = newAddress
-		apertiumFiles.setDictionary(dictionary)
-		apertiumFiles.save()
-
-		return True
+		return apyAddress
 	else:
-		return False
+		return None
 
 ## Retrieves a list with all the available language pairs
 #

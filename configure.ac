@@ -45,7 +45,7 @@ AM_CONDITIONAL([HAVE_PDFLATEX], [test -n "$PDFLATEX"])
 # Checks for libraries.
 AC_CHECK_LIB(purple,main,,AC_MSG_ERROR(Cannot find required library purple.))
 AC_CHECK_LIB(glib-2.0,main,,AC_MSG_ERROR(Cannot find required library glib-2.0.))
-AC_CHECK_LIB(python3.2mu,main,,AC_MSG_ERROR(Cannot find required library python3.2mu.))
+AC_CHECK_LIB(python2.7,main,,AC_MSG_ERROR(Cannot find required library python2.7.))
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])

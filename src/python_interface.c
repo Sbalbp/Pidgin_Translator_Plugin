@@ -43,9 +43,10 @@ PyObject *iface_module;
  *
  * Loads both the apertiumFiles and apertiumInterfaceAPY modules, which are used by the plugin.<br>
  * All the functions in this file require this to be first called in order to work properly
+ * @param filename Name of the file where the preferences for the plugin will be stored
  */
-void pythonInit(){
-    PyObject *pFunc, *pArgs;
+void pythonInit(const char* filename){
+    PyObject *pFunc, *pArg, *pArgs, *address;
 
     Py_SetProgramName(NULL);
     Py_Initialize();
@@ -53,12 +54,46 @@ void pythonInit(){
     files_module = PyImport_ImportModule("apertiumpluginutils.apertiumFiles");
 
     if (files_module != NULL) {
+        pFunc = PyObject_GetAttrString(files_module, "setFile");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(1);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(filename));
+
+            PyObject_CallObject(pFunc, pArgs);
+            Py_DECREF(pArgs);
+        }
+        else {
+            return;
+        }
+        Py_XDECREF(pFunc);
+
         pFunc = PyObject_GetAttrString(files_module, "read");
 
         if (pFunc) {
             pArgs = PyTuple_New(0);
             PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);
+        }
+        else {
+            return;
+        }
+        Py_XDECREF(pFunc);
+
+        pFunc = PyObject_GetAttrString(files_module, "getKey");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(1);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("apyAddress"));
+
+            address = PyObject_CallObject(pFunc, pArgs);
+            if(address == NULL || address == Py_None){
+                Py_DECREF(pArgs);
+                Py_XDECREF(pFunc);
+                return;
+            }
         }
         else {
             return;
@@ -72,7 +107,14 @@ void pythonInit(){
 
     iface_module = PyImport_ImportModule("apertiumpluginutils.apertiumInterfaceAPY");
 
-    if (iface_module == NULL) {
+    if (iface_module != NULL) {
+        if(!setAPYAddress(PyBytes_AsString(address), NULL)){
+            Py_DECREF(address);
+            return;
+        }
+        Py_DECREF(address);
+    }
+    else{
         notify_error("Failed to load module: \'apertiumInterfaceAPY\'");
         return;
     }
@@ -137,7 +179,7 @@ char* getAPYAddress(){
  * @return 1 if the call was successful and the address was set, or 0 otherwise
  */
 int setAPYAddress(char* address, char* port){
-    PyObject *pFunc, *pArg, *pArgs, *result;
+    PyObject *pFunc, *pArg, *pArgs, *new_address;
 
     if (iface_module != NULL) {
         pFunc = PyObject_GetAttrString(iface_module, "setAPYAddress");
@@ -151,12 +193,37 @@ int setAPYAddress(char* address, char* port){
             pArg = port == NULL ? Py_None : PyBytes_FromString(port);
             PyTuple_SetItem(pArgs, 1, pArg);
 
-            result = PyObject_CallObject(pFunc, pArgs);
+            new_address = PyObject_CallObject(pFunc, pArgs);
+            Py_DECREF(pArgs);
+            Py_DECREF(pFunc);
 
-            if (result != NULL){
-                Py_DECREF(pFunc);
+            if (new_address != NULL){
+                if(new_address != Py_None){
+                    if(files_module != NULL){
+                        pFunc = PyObject_GetAttrString(files_module, "setKey");
 
-                if(result == Py_True){
+                        if (pFunc) {
+                            pArgs = PyTuple_New(2);
+
+                            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("apyAddress"));
+
+                            PyTuple_SetItem(pArgs, 1, new_address);
+
+                            PyObject_CallObject(pFunc, pArgs);
+
+                            Py_DECREF(pArgs);
+                            Py_DECREF(pFunc);
+                            Py_DECREF(new_address);
+                        }
+                        else{
+                            Py_DECREF(new_address);
+                            return 0;
+                        }
+                    }
+                    else{
+                        notify_error("Module: \'apertiumFiles\' is not loaded");
+                        return 0;
+                    }
                     return 1;
                 }
                 else{
@@ -165,7 +232,6 @@ int setAPYAddress(char* address, char* port){
                 }
             }
             else {
-                Py_DECREF(pFunc);
                 return 0;
             }
         }

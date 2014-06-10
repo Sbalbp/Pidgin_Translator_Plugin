@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-AM_PYV1=3
+AM_PYV1=2
 AM_PURPLE_GLIB_CFLAGS =`pkg-config --libs --cflags purple`
 AM_PYTHON_CFLAGS =`pkg-config --libs --cflags python$(AM_PYV1)`
 AM_PY = $(top_builddir)/python

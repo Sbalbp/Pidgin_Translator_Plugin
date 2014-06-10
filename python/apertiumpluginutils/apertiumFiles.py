@@ -37,6 +37,14 @@ dictionary = None
 ## Name of the file where the dictionary will be stored
 fileName = 'apertium_plugin_pairs_preferences.pkl'
 
+## Sets the name for the file where the dictionary will be stored
+#
+# @param newFileName Name of the file
+def setFile(newFileName):
+	global fileName
+
+	fileName = newFileName
+
 ## Creates a new empty dictionary and stores it in a file
 #
 # If the file to store the dictionary in does not exist, it is created
@@ -75,6 +83,36 @@ def save():
 
 	pickle.dump(dictionary, file1)
 	file1.close()
+
+## Retrieves the value pointed by a key in the dictionary
+#
+# @param key Entry in the dictionary to look for
+# @return Value pointed by key if it exists, or None otherwise
+def getKey(key):
+	global dictionary
+
+	if(dictionary is None):
+		read()
+
+	if(key in dictionary.keys()):
+		if(isinstance(dictionary[key],str) and sys.version_info[0] >= 3):
+			return dictionary[key].encode('utf-8')
+		else:
+			return dictionary[key]
+	else:
+		return None
+
+## Sets the value pointed by a key in the dictionary
+#
+# @param key Entry in the dictionary to set
+# @param value Value to be assigned to the key
+def setKey(key, value):
+	global dictionary
+
+	if(dictionary is None):
+		read()
+
+	dictionary[key] = value
 
 ## Retrieves the current dictionary
 #

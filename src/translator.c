@@ -425,7 +425,7 @@ gboolean plugin_load(PurplePlugin *plugin){
         NULL);
 
 	// Python embedding
-	pythonInit();
+	pythonInit("apertium_pidgin_plugin_preferences.pkl");
 
 	return TRUE;
 }

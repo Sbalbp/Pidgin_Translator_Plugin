@@ -19,7 +19,7 @@
 
 #include <Python.h>
 
-void pythonInit();
+void pythonInit(const char* filename);
 
 void pythonFinalize();
 
