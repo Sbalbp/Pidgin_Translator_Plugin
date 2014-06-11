@@ -43,10 +43,10 @@ $(AM_OBJ):
 	$(MKDIR_P) $(AM_OBJ)
 
 $(AM_OBJ)/python_interface.o: $(AM_SRC)/python_interface.c $(AM_INC)/python_interface.h
-	$(CC) -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS)
+	$(CC) -fPIC -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS)
 
 $(AM_OBJ)/notifications.o: $(AM_SRC)/notifications.c $(AM_INC)/notifications.h
-	$(CC) -c -o $(AM_OBJ)/notifications.o $(AM_SRC)/notifications.c -I $(AM_INC) $(AM_PURPLE_GLIB_CFLAGS)
+	$(CC) -fPIC -c -o $(AM_OBJ)/notifications.o $(AM_SRC)/notifications.c -I $(AM_INC) $(AM_PURPLE_GLIB_CFLAGS)
 
 clean-local:
 	rm -rf $(AM_SO)
