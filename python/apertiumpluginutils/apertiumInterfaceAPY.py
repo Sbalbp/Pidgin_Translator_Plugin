@@ -70,11 +70,11 @@ def getAPYAddress():
 
 ## Changes the address where requests to the APY will be sent
 #
-# The address is only changed if there was a postive checkAPY() response for it
 # @param newAddress New address for the APY
 # @param newPort Port for the APY. None if no port is needed
+# @param force Forces the address to be set even if there was no response
 # @return The new address if it was set, or None otherwise
-def setAPYAddress(newAddress, newPort=None):
+def setAPYAddress(newAddress, newPort=None, force=False):
 	global apyAddress
 
 	if(pyVersion >= 3):
@@ -91,7 +91,7 @@ def setAPYAddress(newAddress, newPort=None):
 	if(newPort is not None):
 		newAddress = newAddress+':'+newPort
 
-	if(checkAPY(newAddress)):
+	if(checkAPY(newAddress) or force):
 		apyAddress = newAddress
 
 		return apyAddress

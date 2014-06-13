@@ -72,6 +72,13 @@ PurpleCmdId apy_noargs_command_id;
  */
 PurpleCmdId apy_args_command_id;
 
+/**
+ * @brief ID for the 'apertium_errors' command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId errors_command_id;
+
 /****************************************************************************************************/
 /*----------------------------------------------UTILS-----------------------------------------------*/
 /****************************************************************************************************/
@@ -98,8 +105,12 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
             dictionaryGetUserLanguage(username, key, "source"),
             dictionaryGetUserLanguage(username, key, "target"));
 
-        *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
-        sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,translation);
+        if(translation != NULL){
+            *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
+            sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,translation);
+        }
+
+        free(oldMsg);
     }
 }
 
@@ -250,7 +261,7 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
 PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 								gchar **args, gchar **error, void *data){
     const char *username;
-    char *command, *source, *target;
+    char *command, *source, *target, *msg;
 	PurpleBuddy *buddy;
 
     if(parse_set_arguments(*args,&command,&source,&target)){
@@ -258,6 +269,10 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
         username = purple_buddy_get_name(buddy);
 
     	if(dictionarySetUserEntry(username,command,source,target)){
+            msg = malloc(sizeof(char)*(strlen(source)+strlen(target)+strlen(command)+strlen(username)+100));
+            sprintf(msg, "%s pair for %s successfully set to %s-%s\0",command,username,source,target);
+            notify_info("Success",msg);
+            free(msg);
     		return PURPLE_CMD_RET_OK;
     	}
     	else{
@@ -315,11 +330,47 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
     }
 
     port = strtok(NULL," ");
-    if(!setAPYAddress(address,port)){
+    if(!setAPYAddress(address,port,0)){
         return PURPLE_CMD_RET_FAILED;
     }
 
+    notify_info("Success","APY address successfully changed");
     return PURPLE_CMD_RET_OK;
+}
+
+/**
+ * @brief Callback for the 'apertium_errors' command
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_errors_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    char *swtch;
+
+    if((swtch = strtok(*args," ")) == NULL){
+        notify_error("No switch value provided");
+        return PURPLE_CMD_RET_FAILED;
+    }
+
+    if(!strcmp(swtch,"on")){
+        notifications_on();
+        notify_info("Success","Error messages enabled");
+        return PURPLE_CMD_RET_OK;
+    }
+    if(!strcmp(swtch,"off")){
+        notifications_off();
+        notify_info("Success","Error messages disabled");
+        return PURPLE_CMD_RET_OK;
+    }
+
+    notify_error("Argument for this command must be either \"on\" or \"off\"");
+    return PURPLE_CMD_RET_FAILED;
 }
 
 /****************************************************************************************************/
@@ -424,6 +475,11 @@ gboolean plugin_load(PurplePlugin *plugin){
         "apertium_apy \'address\' \'port\'\nSets the address where the Apertium-APY is located.\nThe \'port\' argument is optional",
         NULL);
 
+    errors_command_id = purple_cmd_register("apertium_errors", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_errors_cb,
+        "apertium_errors \'switch\'\nTurns on/off the error notification messages.\nThe \'switch\' argument must be either \"on\" or \"off\"",
+        NULL);
+
 	// Python embedding
 	pythonInit("apertium_pidgin_plugin_preferences.pkl");
 
@@ -446,6 +502,9 @@ gboolean plugin_unload(PurplePlugin *plugin){
 	purple_cmd_unregister(set_command_id);
     purple_cmd_unregister(check_command_id);
     purple_cmd_unregister(pairs_command_id);
+    purple_cmd_unregister(apy_noargs_command_id);
+    purple_cmd_unregister(apy_args_command_id);
+    purple_cmd_unregister(errors_command_id);
 
 	pythonFinalize();
 

@@ -32,6 +32,11 @@
 PurplePlugin *translator_plugin_handle = NULL;
 
 /**
+ * @brief Indicates whether or not error messages should be shown
+ */
+int errors_on = 1;
+
+/**
  * @brief Sets the plugin handle variable
  *
  * This function must be called before any other in this file, or else the handle will be NULL, producing an error
@@ -39,6 +44,19 @@ PurplePlugin *translator_plugin_handle = NULL;
  */
 void set_translator_plugin(PurplePlugin* plugin){
 	translator_plugin_handle = plugin;
+}
+
+/**
+ * @brief Activates error notification messages
+ */
+void notifications_on(){
+	errors_on = 1;
+}
+/**
+ * @brief Deactivates error notification messages
+ */
+void notifications_off(){
+	errors_on = 0;
 }
 
 /**
@@ -60,6 +78,8 @@ void notify_info(const char* title, const char* text){
  * @param text Text string containing the main body of the notification (generally, the cause of the error)
  */
 void notify_error(const char* text){
-	purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_ERROR,
+	if(errors_on){
+		purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_ERROR,
 			"Apertium plugin error", text, NULL,NULL,NULL);
+	}
 }

@@ -108,7 +108,7 @@ void pythonInit(const char* filename){
     iface_module = PyImport_ImportModule("apertiumpluginutils.apertiumInterfaceAPY");
 
     if (iface_module != NULL) {
-        if(!setAPYAddress(PyBytes_AsString(address), NULL)){
+        if(!setAPYAddress(PyBytes_AsString(address), NULL,1)){
             Py_DECREF(address);
             return;
         }
@@ -176,22 +176,27 @@ char* getAPYAddress(){
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @param address Pointer to a string with the new address
  * @param port Pointer to a string with the new port. NULL if no port is needed
+ * @param force Any number that is not 0 indicates the function to forcefully change the address,
+ * despite not receiving an answer from the server
  * @return 1 if the call was successful and the address was set, or 0 otherwise
  */
-int setAPYAddress(char* address, char* port){
+int setAPYAddress(char* address, char* port, int force){
+    char* msg;
     PyObject *pFunc, *pArg, *pArgs, *new_address;
 
     if (iface_module != NULL) {
         pFunc = PyObject_GetAttrString(iface_module, "setAPYAddress");
 
         if (pFunc) {
-            pArgs = PyTuple_New(2);
+            pArgs = PyTuple_New(3);
 
             pArg = PyBytes_FromString(address);
             PyTuple_SetItem(pArgs, 0, pArg);
 
             pArg = port == NULL ? Py_None : PyBytes_FromString(port);
             PyTuple_SetItem(pArgs, 1, pArg);
+
+            PyTuple_SetItem(pArgs, 2, force == 0 ? Py_False : Py_True);
 
             new_address = PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);
@@ -227,7 +232,15 @@ int setAPYAddress(char* address, char* port){
                     return 1;
                 }
                 else{
-                    notify_error("No response from given address");
+                    msg = malloc(sizeof(char)*(strlen(address)+(port == NULL ? 0 : strlen(port))+100));
+                    if(port != NULL){
+                        sprintf(msg,"No response from server at %s:%s\0",address,port);
+                    }
+                    else{
+                        sprintf(msg,"No response from server at %s\0",address);
+                    }
+                    notify_error(msg);
+                    free(msg);
                     return 0;
                 }
             }
@@ -545,7 +558,7 @@ int pairExists(char* source, char* target){
  * @param text String containing the text to be translated
  * @param source String containing the source language to translate the text from
  * @param target String containing the target language to translate the text to
- * @return A string containing the translated text if the call was successful, or "Error in translation" otherwise
+ * @return A string containing the translated text if the call was successful, or NULL otherwise
  */
 char* translate(char* text, char* source, char* target){
     char* translation;
@@ -576,13 +589,13 @@ char* translate(char* text, char* source, char* target){
                 }
                 else{
                     notify_error(PyBytes_AsString(PyDict_GetItemString(result,"errorMsg")));
-                    return "Error in translation";
+                    return NULL;
                 }
             }
             else {
                 Py_DECREF(pFunc);
                 notify_error("There was an error in the translate call");
-                return "Error in translation";
+                return NULL;
             }
         }
         else {
@@ -591,6 +604,6 @@ char* translate(char* text, char* source, char* target){
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return "Error in translation";
+        return NULL;
     }
 }
