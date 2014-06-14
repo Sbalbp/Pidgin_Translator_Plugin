@@ -268,15 +268,19 @@ int setAPYAddress(char* address, char* port, int force){
  * @return 1 if there is a language pair for the user, or 0 otherwise
  */
 int dictionaryHasUser(const char* user, const char* direction){
+    int has_user;
     PyObject *dictionary;
 
     if((dictionary = getDictionary()) == Py_None){
         return 0;
     }
 
-    return PyDict_Contains(
-            PyDict_GetItemString(dictionary, direction),
-            PyUnicode_FromString(user));
+    has_user = PyDict_Contains(
+                PyDict_GetItemString(dictionary, direction),
+                PyUnicode_FromString(user));
+
+    Py_DECREF(dictionary);
+    return has_user;
 }
 
 /**
@@ -289,14 +293,18 @@ int dictionaryHasUser(const char* user, const char* direction){
  * @return The language if the call was successful, or "None" otherwise
  */
 char* dictionaryGetUserLanguage(const char *user, const char* direction, const char* key){
+    char* user_lang;
     PyObject *dictionary;
 
     if((dictionary = getDictionary()) == Py_None){
         return "None";
     }
 
-    return PyBytes_AsString(PyDict_GetItemString(
-        PyDict_GetItemString(PyDict_GetItemString(dictionary, direction), user),key));
+    user_lang = PyBytes_AsString(PyDict_GetItemString(
+                    PyDict_GetItemString(PyDict_GetItemString(dictionary, direction), user),key));
+
+    Py_DECREF(dictionary);
+    return user_lang;
 }
 
 /**
@@ -326,6 +334,7 @@ int dictionarySetUserEntry(const char* user, const char* direction, const char* 
             user,sourceTargetDict);
 
         setDictionary(dictionary);
+        Py_DECREF(dictionary);
 
         Py_XDECREF(sourceTargetDict);
 
@@ -334,6 +343,34 @@ int dictionarySetUserEntry(const char* user, const char* direction, const char* 
     else{
         return 0;
     }
+}
+
+/**
+ * @brief Removes all the entries from the dictionary related to the given user
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param user Name of the user whose entries will be removed
+ * @return 1 on success, or 0 otherwise
+ */
+int dictionaryRemoveUserEntries(const char* user){
+    PyObject *dictionary;
+
+    if((dictionary = getDictionary()) == Py_None){
+        return 0;
+    }
+
+    if(PyDict_Contains(PyDict_GetItemString(dictionary, "incoming"), PyUnicode_FromString(user))){
+        PyDict_DelItemString(PyDict_GetItemString(dictionary, "incoming"), user);
+    }
+
+    if(PyDict_Contains(PyDict_GetItemString(dictionary, "outgoing"), PyUnicode_FromString(user))){
+        PyDict_DelItemString(PyDict_GetItemString(dictionary, "outgoing"), user);
+    }
+
+    setDictionary(dictionary);
+    Py_DECREF(dictionary);
+
+    return 1;
 }
 
 /**

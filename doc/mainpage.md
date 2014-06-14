@@ -56,6 +56,8 @@ The following commands are available for now in the plugin:
 
 <li><b>/apertium_set <em>direction</em> <em>source</em> <em>target</em></b> Sets a language pair for the buddy whose conversation the command was issued on. <em>direction</em> must be either 'incoming' (for incoming messages) or 'outgoing' (for messages sent to that buddy). <em>source</em> and <em>target</em> are the source and target languages of the language pair to be set, respectively.</li>
 
+<li><b>/apertium_delete</b> Delete all language pair data for the buddy whose conversation the command was issued on.</li>
+
 <li><b>/apertium_errors <em>switch</em></b> Turns on/off the error notifications from the plugin. <em>switch</em> must be either 'on' (enable notifications) or 'off' (disable notifications).</li>
 </ul>
 
