@@ -346,6 +346,31 @@ int dictionarySetUserEntry(const char* user, const char* direction, const char* 
 }
 
 /**
+ * @brief Removes the specified entry from the dictionary related to the given user
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param user Name of the user whose entry will be removed
+ * @param entry Name of the entry that will be removed. Must be either 'incoming' or 'outgoing'
+ * @return 1 on success, or 0 otherwise
+ */
+int dictionaryRemoveUserEntry(const char* user, char* entry){
+    PyObject *dictionary;
+
+    if((dictionary = getDictionary()) == Py_None){
+        return 0;
+    }
+
+    if(PyDict_Contains(PyDict_GetItemString(dictionary, entry), PyUnicode_FromString(user))){
+        PyDict_DelItemString(PyDict_GetItemString(dictionary, entry), user);
+    }
+
+    setDictionary(dictionary);
+    Py_DECREF(dictionary);
+
+    return 1;
+}
+
+/**
  * @brief Removes all the entries from the dictionary related to the given user
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)

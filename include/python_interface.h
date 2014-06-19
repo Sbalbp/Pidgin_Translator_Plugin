@@ -33,7 +33,9 @@ char* dictionaryGetUserLanguage(const char* user, const char* direction, const c
 
 int dictionarySetUserEntries(const char* user, const char* direction, const char* source, const char* target);
 
-int dictionaryRemoveUserEntry(const char* user);
+int dictionaryRemoveUserEntry(const char* user, char* entry);
+
+int dictionaryRemoveUserEntries(const char* user);
 
 PyObject* getDictionary();
 

@@ -45,11 +45,18 @@
 PurpleCmdId set_command_id;
 
 /**
- * @brief ID for the 'apertium_delete' command
+ * @brief ID for the 'apertium_delete' (without arguments) command
  *
  * Used to unregister the command on plugin unload
  */
-PurpleCmdId delete_command_id;
+PurpleCmdId delete_noargs_command_id;
+
+/**
+ * @brief ID for the 'apertium_delete' (with arguments) command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId delete_args_command_id;
 
 /**
  * @brief ID for the 'apertium_check' command
@@ -125,7 +132,7 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
  * @brief Parses and returns arguments for 'apertium_set' command
  *
  * This function expects exactly 3 arguments. Passing less than 3 arguments in args will result in an error. Arguments after the third one will be ignored
- * @param args String containing the argument for passed to the command (separated by whitespaces)
+ * @param args String containing the arguments passed to the command (separated by whitespaces)
  * @param command Reference to a string where the 'command' argument will be stored
  * @param source Reference to a string where the 'source language' argument will be stored
  * @param target Reference to a string where the 'target language' argument will be stored
@@ -135,24 +142,46 @@ int parse_set_arguments(char* args, char **command, char** source, char** target
 
     if((*command = strtok(args," ")) == NULL){
         notify_error("No command provided");
-        return FALSE;
+        return 0;
     }
 
     if(strcmp(*command,"incoming") && strcmp(*command,"outgoing")){
         notify_error("Command for apertium_set must be \'incoming\' or \'outgoing\'");
-        return FALSE;
+        return 0;
     }
 
 	if((*source = strtok(NULL," ")) == NULL){
         notify_error("No source language provided");
-        return FALSE;
+        return 0;
     }
 	if((*target = strtok(NULL," ")) == NULL){
         notify_error("No target language provided");
-        return FALSE;
+        return 0;
     }
 
     return pairExists(*source, *target);
+}
+
+/**
+ * @brief Parses and returns arguments for 'apertium_delete' command
+ *
+ * This function expects 1 argument in args. Additional arguments will be ignored
+ * @param args String containing the argument passed to the command
+ * @param command Reference to a string where the 'command' argument will be stored
+ * @return 1 on success, or 0 otherwise
+ */
+int parse_delete_arguments(char* args, char **command){
+
+    if((*command = strtok(args," ")) == NULL){
+        return 0;
+    }
+
+    if(strcmp(*command,"incoming") && strcmp(*command,"outgoing")){
+        notify_error("Command for apertium_delete must be null, \'incoming\' or \'outgoing\'");
+        return 0;
+    }
+
+    return 1;
 }
 
 /****************************************************************************************************/
@@ -292,7 +321,7 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 }
 
 /**
- * @brief Callback for the 'apertium_delete' command
+ * @brief Callback for the 'apertium_delete' command when no arguments are passed
  *
  * Refer to the libpurple Commands API documentation for more information
  * @param conv Conversation where the command was used
@@ -302,7 +331,7 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
  * @param data Additional data passed
  * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
  */
-PurpleCmdRet apertium_delete_cb(PurpleConversation *conv, const gchar *cmd,
+PurpleCmdRet apertium_delete_noargs_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     const char *username;
     char *msg;
@@ -320,6 +349,40 @@ PurpleCmdRet apertium_delete_cb(PurpleConversation *conv, const gchar *cmd,
     }
     else{
         return PURPLE_CMD_RET_FAILED;
+    }
+}
+
+/**
+ * @brief Callback for the 'apertium_delete' command when arguments are passed
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_delete_args_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    const char *username;
+    char *command, *msg;
+    PurpleBuddy *buddy;
+
+    if(parse_delete_arguments(*args,&command)){
+        buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
+        username = purple_buddy_get_name(buddy);
+
+        if(dictionaryRemoveUserEntry(username, command)){
+            msg = malloc(sizeof(char)*(strlen(username)+strlen(command)+100));
+            sprintf(msg, "Successfully removed %s data for %s\0",command,username);
+            notify_info("Success",msg);
+            free(msg);
+            return PURPLE_CMD_RET_OK;
+        }
+        else{
+            return PURPLE_CMD_RET_FAILED;
+        }
     }
 }
 
@@ -494,9 +557,14 @@ gboolean plugin_load(PurplePlugin *plugin){
         "apertium_set \'direction\' \'source language\' \'target language\'\nSets the source-target language pair to translate messages from/to this user.\n\'direction\' must be \"incoming\" for received messages, or \"outgoing\" for user-sent messages.\n\'source language\' is the language expected to translate messages from.\n\'target language\' is the language to translate messages to.",
         NULL);
 
-    delete_command_id = purple_cmd_register("apertium_delete", "", PURPLE_CMD_P_HIGH,
-        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_delete_cb,
+    delete_noargs_command_id = purple_cmd_register("apertium_delete", "", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_delete_noargs_cb,
         "apertium_delete\nRemoves the stored language pair data for this buddy.",
+        NULL);
+
+    delete_args_command_id = purple_cmd_register("apertium_delete", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_delete_args_cb,
+        "apertium_delete \'direction\'\nRemoves the stored language pair data for this buddy.\n\'direction\' must be \"incoming\" or \"outgoing\".",
         NULL);
 
     check_command_id = purple_cmd_register("apertium_check", "", PURPLE_CMD_P_HIGH,
@@ -544,7 +612,8 @@ gboolean plugin_unload(PurplePlugin *plugin){
 	purple_signals_disconnect_by_handle(plugin);
 
 	purple_cmd_unregister(set_command_id);
-    purple_cmd_unregister(delete_command_id);
+    purple_cmd_unregister(delete_noargs_command_id);
+    purple_cmd_unregister(delete_args_command_id);
     purple_cmd_unregister(check_command_id);
     purple_cmd_unregister(pairs_command_id);
     purple_cmd_unregister(apy_noargs_command_id);
