@@ -18,10 +18,11 @@
 #
 
 AM_PYV1=2
+AM_PYV2=7
 AM_PURPLE_GLIB_CFLAGS =`pkg-config --libs --cflags purple`
 
 if HAVE_PDFLATEX
-AM_PYTHON_CFLAGS =`python$(AM_PYV1)-config --libs --cflags`
+AM_PYTHON_CFLAGS =`python$(AM_PYV1).$(AM_PYV2)-config --libs --cflags`
 else
 AM_PYTHON_CFLAGS =`pkg-config --libs --cflags python$(AM_PYV1)`
 endif

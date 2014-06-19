@@ -38,7 +38,7 @@ if test -z "$PDFLATEX";
    then AC_MSG_WARN([pdflatex not found - continuing without pdflatex support])
 fi
 
-AC_CHECK_PROGS([PYTHONCNF], [python2-config])
+AC_CHECK_PROGS([PYTHONCNF], [python2.7-config])
 if test -z "$PYTHONCNF";
    then AC_MSG_WARN([python-config not found - continuing without python-config])
 fi
