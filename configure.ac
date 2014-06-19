@@ -21,16 +21,16 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT(pidgin_apertium_plugin, 0.1.0, sbalbp@gmail.com)
-AM_INIT_AUTOMAKE(pidgin_apertium_plugin, 0.1.0)
+AC_INIT([pidgin_apertium_plugin], [0.1.0], [sbalbp@gmail.com])
 AC_CONFIG_SRCDIR([src/translator.c])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
 AC_PROG_CC
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
-   then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+   then AC_MSG_WARN([doxygen not found - continuing without Doxygen support])
 fi
 
 AC_CHECK_PROGS([PDFLATEX], [pdflatex])
@@ -38,9 +38,16 @@ if test -z "$PDFLATEX";
    then AC_MSG_WARN([pdflatex not found - continuing without pdflatex support])
 fi
 
+AC_CHECK_PROGS([PYTHONCNF], [python2-config])
+if test -z "$PYTHONCNF";
+   then AC_MSG_WARN([python-config not found - continuing without python-config])
+fi
+
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
 AM_CONDITIONAL([HAVE_PDFLATEX], [test -n "$PDFLATEX"])
+
+AM_CONDITIONAL([HAVE_PYTHONCNF], [test -n "$PYTHONCNF"])
 
 # Checks for libraries.
 AC_CHECK_LIB(purple,main,,AC_MSG_ERROR(Cannot find required library purple.))

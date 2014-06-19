@@ -21,9 +21,9 @@
 
 void set_translator_plugin(PurplePlugin* plugin);
 
-void notifications_on();
+void notifications_on(void);
 
-void notifications_off();
+void notifications_off(void);
 
 void notify_info(const char* title, const char* text);
 

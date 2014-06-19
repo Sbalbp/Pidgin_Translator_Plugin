@@ -46,7 +46,7 @@ PyObject *iface_module;
  * @param filename Name of the file where the preferences for the plugin will be stored
  */
 void pythonInit(const char* filename){
-    PyObject *pFunc, *pArg, *pArgs, *address;
+    PyObject *pFunc, *pArgs, *address;
 
     Py_SetProgramName(NULL);
     Py_Initialize();
@@ -123,7 +123,7 @@ void pythonInit(const char* filename){
 /**
  * @brief Finalizes the Python environment
  */
-void pythonFinalize(){
+void pythonFinalize(void){
     Py_XDECREF(files_module);
     Py_XDECREF(iface_module);
     Py_Finalize();
@@ -135,7 +135,7 @@ void pythonFinalize(){
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @return The address if the call was successful, or NULL otherwise
  */
-char* getAPYAddress(){
+char* getAPYAddress(void){
     char *address;
     PyObject *pFunc, *pArgs, *result;
 
@@ -234,10 +234,10 @@ int setAPYAddress(char* address, char* port, int force){
                 else{
                     msg = malloc(sizeof(char)*(strlen(address)+(port == NULL ? 0 : strlen(port))+100));
                     if(port != NULL){
-                        sprintf(msg,"No response from server at %s:%s\0",address,port);
+                        sprintf(msg,"No response from server at %s:%s",address,port);
                     }
                     else{
-                        sprintf(msg,"No response from server at %s\0",address);
+                        sprintf(msg,"No response from server at %s",address);
                     }
                     notify_error(msg);
                     free(msg);
@@ -404,7 +404,7 @@ int dictionaryRemoveUserEntries(const char* user){
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @return The dictionary (as a PyObject) if the call was successful, or Py_None otherwise
  */
-PyObject* getDictionary(){
+PyObject* getDictionary(void){
     PyObject *pFunc, *pArgs, *result;
 
     if (files_module != NULL) {
@@ -439,9 +439,8 @@ PyObject* getDictionary(){
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @param item New dictionary to substitute the old one with
- * @return The dictionary (as a PyObject) if the call was successful, or Py_None otherwise
  */
-PyObject* setDictionary(PyObject* item){
+void setDictionary(PyObject* item){
     PyObject *pFunc, *pArgs;
 
     if (files_module != NULL) {
@@ -454,14 +453,9 @@ PyObject* setDictionary(PyObject* item){
 
             PyObject_CallObject(pFunc, pArgs);
         }
-        else {
-            return Py_None;
-        }
-        Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumFiles\' is not loaded");
-        return Py_None;
     }
 }
 
@@ -470,7 +464,7 @@ PyObject* setDictionary(PyObject* item){
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  */
-void saveDictionary(){
+void saveDictionary(void){
     PyObject *pFunc, *pArgs;
 
     if(getDictionary() != Py_None && getDictionary() != NULL){
@@ -505,8 +499,7 @@ void saveDictionary(){
  */
 int getAllPairs(char**** pairList){
     int i, size;
-    PyObject *pFunc, *pArgs, *pArg, *result, *list;
-    char *cad;
+    PyObject *pFunc, *pArgs, *result, *list;
 
     if (iface_module != NULL) {
         pFunc = PyObject_GetAttrString(iface_module, "getAllPairs");
@@ -547,7 +540,6 @@ int getAllPairs(char**** pairList){
             Py_XDECREF(pFunc);
             return 0;
         }
-        Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
@@ -604,8 +596,8 @@ int pairExists(char* source, char* target){
             }
         }
         else {
+            return 0;
         }
-        Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
@@ -661,8 +653,8 @@ char* translate(char* text, char* source, char* target){
             }
         }
         else {
+            return NULL;
         }
-        Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");

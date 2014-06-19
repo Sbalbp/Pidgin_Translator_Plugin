@@ -18,12 +18,13 @@
  */
 
 #include <Python.h>
+#include "notifications.h"
 
 void pythonInit(const char* filename);
 
-void pythonFinalize();
+void pythonFinalize(void);
 
-char* getAPYAddress();
+char* getAPYAddress(void);
 
 int setAPYAddress(char* address, char* port, int force);
 
@@ -31,17 +32,17 @@ int dictionaryHasUser(const char* user, const char* direction);
 
 char* dictionaryGetUserLanguage(const char* user, const char* direction, const char* key);
 
-int dictionarySetUserEntries(const char* user, const char* direction, const char* source, const char* target);
+int dictionarySetUserEntry(const char* user, const char* direction, const char* source, const char* target);
 
 int dictionaryRemoveUserEntry(const char* user, char* entry);
 
 int dictionaryRemoveUserEntries(const char* user);
 
-PyObject* getDictionary();
+PyObject* getDictionary(void);
 
-PyObject* setDictionary(PyObject* item);
+void setDictionary(PyObject* item);
 
-void saveDictionary();
+void saveDictionary(void);
 
 int getAllPairs(char**** pairList);
 

@@ -113,7 +113,7 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
 
     if(dictionaryHasUser(username, key)){
         char* oldMsg = malloc(sizeof(char)*(strlen(*message)+1));
-        sprintf(oldMsg,"%s\0",*message);
+        sprintf(oldMsg,"%s",*message);
 
         translation = translate(*message,
             dictionaryGetUserLanguage(username, key, "source"),
@@ -121,7 +121,7 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
 
         if(translation != NULL){
             *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
-            sprintf(*message,"\n%s\n-----------------\n%s\0",oldMsg,translation);
+            sprintf(*message,"\n%s\n-----------------\n%s",oldMsg,translation);
         }
 
         free(oldMsg);
@@ -211,7 +211,7 @@ PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
     buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
     username = purple_buddy_get_name(buddy);
 
-    sprintf(title,"Pairs for \'%s\'\0", purple_buddy_get_name(buddy));
+    sprintf(title,"Pairs for \'%s\'", purple_buddy_get_name(buddy));
 
     if(dictionaryHasUser(username, "incoming")){
         sprintf(text,"Incoming messages: %s - %s\n",
@@ -222,12 +222,12 @@ PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
         sprintf(text,"Incoming messages: None\n");
     }
     if(dictionaryHasUser(username, "outgoing")){
-        sprintf(text,"%sOutgoing messages: %s - %s\0", text,
+        sprintf(text,"%sOutgoing messages: %s - %s", text,
             dictionaryGetUserLanguage(username, "outgoing", "source"),
             dictionaryGetUserLanguage(username, "outgoing", "target"));
     }
     else{
-        sprintf(text,"%sOutgoing messages: None\0", text);
+        sprintf(text,"%sOutgoing messages: None", text);
     }
 
     notify_info(title, text);
@@ -261,15 +261,14 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
     title = malloc(sizeof(char)*100);
     text = malloc(sizeof(char)*300);
 
-    sprintf(title, "available pairs\0");
-    sprintf(text,"");
-
+    sprintf(title, "available pairs");
+    sprintf(text, " ");
 
     for(i=0; i<size; i++){
         sprintf(text,"%s%s - %s\n", text, pairsList[i][0], pairsList[i][1]);
     }
 
-    sprintf(text,"%s\0", text);
+    sprintf(text,"%s", text);
 
     notify_info(title, text);
 
@@ -306,7 +305,7 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
 
     	if(dictionarySetUserEntry(username,command,source,target)){
             msg = malloc(sizeof(char)*(strlen(source)+strlen(target)+strlen(command)+strlen(username)+100));
-            sprintf(msg, "%s pair for %s successfully set to %s-%s\0",command,username,source,target);
+            sprintf(msg, "%s pair for %s successfully set to %s-%s",command,username,source,target);
             notify_info("Success",msg);
             free(msg);
     		return PURPLE_CMD_RET_OK;
@@ -342,7 +341,7 @@ PurpleCmdRet apertium_delete_noargs_cb(PurpleConversation *conv, const gchar *cm
 
     if(dictionaryRemoveUserEntries(username)){
         msg = malloc(sizeof(char)*(strlen(username)+100));
-        sprintf(msg, "Successfully removed data for %s\0",username);
+        sprintf(msg, "Successfully removed data for %s",username);
         notify_info("Success",msg);
         free(msg);
         return PURPLE_CMD_RET_OK;
@@ -375,7 +374,7 @@ PurpleCmdRet apertium_delete_args_cb(PurpleConversation *conv, const gchar *cmd,
 
         if(dictionaryRemoveUserEntry(username, command)){
             msg = malloc(sizeof(char)*(strlen(username)+strlen(command)+100));
-            sprintf(msg, "Successfully removed %s data for %s\0",command,username);
+            sprintf(msg, "Successfully removed %s data for %s",command,username);
             notify_info("Success",msg);
             free(msg);
             return PURPLE_CMD_RET_OK;
@@ -383,6 +382,9 @@ PurpleCmdRet apertium_delete_args_cb(PurpleConversation *conv, const gchar *cmd,
         else{
             return PURPLE_CMD_RET_FAILED;
         }
+    }
+    else{
+        return PURPLE_CMD_RET_FAILED;
     }
 }
 

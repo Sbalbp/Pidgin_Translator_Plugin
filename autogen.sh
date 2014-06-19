@@ -30,6 +30,7 @@ fi
 
 sed -i "s/AM_PYV1=.*/AM_PYV1=$PYV1/g" src/Makefile.am
 
+sed -i "s/AC_CHECK_PROGS(\[PYTHONCNF.*/AC_CHECK_PROGS([PYTHONCNF], [python$PYV1-config])/g" configure.ac
 sed -i "s/AC_CHECK_LIB(python.*/AC_CHECK_LIB($PYLIB,main,,AC_MSG_ERROR(Cannot find required library $PYLIB.))/g" configure.ac
 
 autoreconf -fi && ./configure

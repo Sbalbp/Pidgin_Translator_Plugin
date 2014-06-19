@@ -19,7 +19,13 @@
 
 AM_PYV1=2
 AM_PURPLE_GLIB_CFLAGS =`pkg-config --libs --cflags purple`
+
+if HAVE_PDFLATEX
+AM_PYTHON_CFLAGS =`python$(AM_PYV1)-config --libs --cflags`
+else
 AM_PYTHON_CFLAGS =`pkg-config --libs --cflags python$(AM_PYV1)`
+endif
+
 AM_PY = $(top_builddir)/python
 AM_INC = $(top_builddir)/include
 AM_SRC = $(top_builddir)/src
@@ -43,7 +49,7 @@ $(AM_OBJ):
 	$(MKDIR_P) $(AM_OBJ)
 
 $(AM_OBJ)/python_interface.o: $(AM_SRC)/python_interface.c $(AM_INC)/python_interface.h
-	$(CC) -fPIC -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS)
+	$(CC) -fPIC -c -o $(AM_OBJ)/python_interface.o $(AM_SRC)/python_interface.c -I $(AM_INC) $(AM_PYTHON_CFLAGS) $(AM_PURPLE_GLIB_CFLAGS)
 
 $(AM_OBJ)/notifications.o: $(AM_SRC)/notifications.c $(AM_INC)/notifications.h
 	$(CC) -fPIC -c -o $(AM_OBJ)/notifications.o $(AM_SRC)/notifications.c -I $(AM_INC) $(AM_PURPLE_GLIB_CFLAGS)

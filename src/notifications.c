@@ -49,13 +49,13 @@ void set_translator_plugin(PurplePlugin* plugin){
 /**
  * @brief Activates error notification messages
  */
-void notifications_on(){
+void notifications_on(void){
 	errors_on = 1;
 }
 /**
  * @brief Deactivates error notification messages
  */
-void notifications_off(){
+void notifications_off(void){
 	errors_on = 0;
 }
 
