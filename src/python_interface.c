@@ -627,9 +627,9 @@ char* translate(char* text, char* source, char* target){
             pArg = PyBytes_FromString(text);
             PyTuple_SetItem(pArgs, 0, pArg);
 
-            PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(source));
+            PyTuple_SetItem(pArgs, 1, PyBytes_FromString(source));
 
-            PyTuple_SetItem(pArgs, 2, PyUnicode_FromString(target));
+            PyTuple_SetItem(pArgs, 2, PyBytes_FromString(target));
 
             result = PyObject_CallObject(pFunc, pArgs);
 

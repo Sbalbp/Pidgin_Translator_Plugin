@@ -1,27 +1,31 @@
-"""
- Pidgin Translator Plugin.
-
- Copyright (C) 2014 Sergio Balbuena <sbalbp@gmail.com>.
-
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation; either version 3 of the
- License, or (at your option) any later version.
-
- This program is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""
+#
+# Pidgin Translator Plugin.
+#
+# Copyright (C) 2014 Sergio Balbuena <sbalbp@gmail.com>.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 
 #!/usr/bin/env python
 
 ## @file apertiumInterfaceAPY.py
 # Acts as an interface with an Apertium-APY
 
+try:
+	import urllib.parse as parse
+except:
+	pass
 try:
     import urllib.request as urllib2
 except:
@@ -284,7 +288,10 @@ def translate(text, source, target):
 		if(result['result']):
 
 			try:
-				request = urllib2.urlopen((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
+				if(pyVersion >= 3):
+					request = urllib2.urlopen(parse.quote_plus((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'),safe=':/=?&|',encoding=None,errors=None))
+				else:
+					request = urllib2.urlopen((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
 			except urllib2.URLError:
 				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 			except urllib2.HTTPError:
