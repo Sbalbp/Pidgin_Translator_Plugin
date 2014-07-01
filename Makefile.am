@@ -18,4 +18,4 @@
 #
 
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = doc src python
+SUBDIRS = doc src

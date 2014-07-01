@@ -20,7 +20,11 @@ The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "
 
 ###Compiling and installing
 
-To begin with, run
+For this plugin to work, it is first necessary to install the python module included in this repository under the 'python' folder, as it is used by the plugin:
+
+* python setup.py install
+
+To compile the plugin, run
 
 * ./autogen.sh
 
@@ -30,7 +34,7 @@ Now run
 
 * make
 
-and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins). Note that a few commands from the Makefile are run with sudo.
+and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins).
 
 It will also generate the documentation in the doc folder.
 

@@ -1,20 +1,20 @@
 """
- Pidgin Translator Plugin.
+Pidgin Translator Plugin.
 
- Copyright (C) 2014 Sergio Balbuena <sbalbp@gmail.com>.
+Copyright (C) 2014 Sergio Balbuena <sbalbp@gmail.com>.
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License as
- published by the Free Software Foundation; either version 3 of the
- License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
 #!/usr/bin/env python
@@ -113,6 +113,40 @@ def setKey(key, value):
 		read()
 
 	dictionary[key] = value
+
+## Sets the language pair to be associated with an user in a direction
+#
+# @param direction String containing 'incoming' or 'outgoing'
+# @param user User the language pair will be associated to
+# @param source Source language of the pair
+# @param target Source language of the pair
+# @return True on success, or Flase otherwise
+def setLangPair(direction, user, source, target):
+	global dictionary
+
+	newDict = {}
+	newDict['source'] = source
+	newDict['target'] = target
+
+	try:
+		dictionary[direction][user]=newDict
+		return True
+	except:
+		return False
+
+## Removes the language pair associated with an user in a direction
+#
+# @param direction String containing 'incoming' or 'outgoing'
+# @param user User whose language pair binding is to be removed
+# @return True on success, or False otherwise
+def unsetLangPair(direction, user):
+	global dictionary
+
+	if(direction in dictionary.keys() and user in dictionary[direction]):
+		del dictionary[direction][user]
+		return True
+	else:
+		return False
 
 ## Retrieves the current dictionary
 #

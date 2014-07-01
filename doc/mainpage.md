@@ -25,7 +25,13 @@ The translating is done by an <a href="http://wiki.apertium.org/wiki/Apy">Aperti
 
 <h3><b>Compiling and installing</b></h3>
 
-To begin with, run
+For this plugin to work, it is first necessary to install the python module included in this repository under the 'python' folder, as it is used by the plugin:
+
+<ul>
+<li>python setup.py install</li>
+</ul>
+
+To compile the plugin, run
 
 <ul>
 <li>./autogen.sh</li>
@@ -39,7 +45,7 @@ Now run
 <li>make</li>
 </ul>
 
-and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins). Note that a few commands from the Makefile are run with sudo.
+and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins).
 
 It will also generate the documentation in the doc folder.
 

@@ -68,4 +68,4 @@ AC_PROG_MKDIR_P
 
 AM_PROG_CC_C_O
 
-AC_OUTPUT(Makefile src/Makefile python/Makefile doc/Makefile)
+AC_OUTPUT(Makefile src/Makefile doc/Makefile)
