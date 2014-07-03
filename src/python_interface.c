@@ -318,29 +318,50 @@ char* dictionaryGetUserLanguage(const char *user, const char* direction, const c
  * @return 1 on success, or 0 otherwise
  */
 int dictionarySetUserEntry(const char* user, const char* direction, const char* source, const char* target){
-    PyObject *sourceTargetDict, *dictionary;
+    PyObject *pFunc, *pArgs, *result;
 
-    if((sourceTargetDict = PyDict_New())!=NULL){
+    if (files_module != NULL) {
+        pFunc = PyObject_GetAttrString(files_module, "setLangPair");
 
-        if((dictionary = getDictionary()) == Py_None){
+        if (pFunc) {
+            pArgs = PyTuple_New(4);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(direction));
+
+            PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(user));
+
+            PyTuple_SetItem(pArgs, 2, PyBytes_FromString(source));
+
+            PyTuple_SetItem(pArgs, 3, PyBytes_FromString(target));
+
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            if(result != NULL){
+                if(result == Py_True){
+                    Py_DECREF(result);
+                    Py_DECREF(pFunc);
+                    Py_DECREF(pArgs);
+                    return 1;
+                }
+                else{
+                    Py_DECREF(result);
+                    Py_DECREF(pFunc);
+                    Py_DECREF(pArgs);
+                    return 0;
+                }
+            }
+            else{
+                Py_DECREF(pFunc);
+                Py_DECREF(pArgs);
+                return 0;
+            }
+        }
+        else{
             return 0;
         }
-
-        PyDict_SetItemString(sourceTargetDict,"source",PyBytes_FromString(source));
-        PyDict_SetItemString(sourceTargetDict,"target",PyBytes_FromString(target));
-
-        PyDict_SetItemString(
-            PyDict_GetItemString(dictionary, direction),
-            user,sourceTargetDict);
-
-        setDictionary(dictionary);
-        Py_DECREF(dictionary);
-
-        Py_XDECREF(sourceTargetDict);
-
-        return 1;
     }
-    else{
+    else {
+        notify_error("Module: \'apertiumFiles\' is not loaded");
         return 0;
     }
 }
@@ -354,20 +375,48 @@ int dictionarySetUserEntry(const char* user, const char* direction, const char* 
  * @return 1 on success, or 0 otherwise
  */
 int dictionaryRemoveUserEntry(const char* user, char* entry){
-    PyObject *dictionary;
+    PyObject *pFunc, *pArgs, *result;
 
-    if((dictionary = getDictionary()) == Py_None){
+    if (files_module != NULL) {
+        pFunc = PyObject_GetAttrString(files_module, "unsetLangPair");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(2);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(entry));
+
+            PyTuple_SetItem(pArgs, 1, PyUnicode_FromString(user));
+
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            if(result != NULL){
+                if(result == Py_True){
+                    Py_DECREF(result);
+                    Py_DECREF(pFunc);
+                    Py_DECREF(pArgs);
+                    return 1;
+                }
+                else{
+                    Py_DECREF(result);
+                    Py_DECREF(pFunc);
+                    Py_DECREF(pArgs);
+                    return 0;
+                }
+            }
+            else{
+                Py_DECREF(pFunc);
+                Py_DECREF(pArgs);
+                return 0;
+            }
+        }
+        else{
+            return 0;
+        }
+    }
+    else {
+        notify_error("Module: \'apertiumFiles\' is not loaded");
         return 0;
     }
-
-    if(PyDict_Contains(PyDict_GetItemString(dictionary, entry), PyUnicode_FromString(user))){
-        PyDict_DelItemString(PyDict_GetItemString(dictionary, entry), user);
-    }
-
-    setDictionary(dictionary);
-    Py_DECREF(dictionary);
-
-    return 1;
 }
 
 /**

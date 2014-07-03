@@ -38,25 +38,25 @@
 #include "version.h"
 
 /**
- * @brief ID for the 'apertium_set' command
+ * @brief ID for the 'apertium_bind' command
  *
  * Used to unregister the command on plugin unload
  */
-PurpleCmdId set_command_id;
+PurpleCmdId bind_command_id;
 
 /**
- * @brief ID for the 'apertium_delete' (without arguments) command
+ * @brief ID for the 'apertium_unbind' (without arguments) command
  *
  * Used to unregister the command on plugin unload
  */
-PurpleCmdId delete_noargs_command_id;
+PurpleCmdId unbind_noargs_command_id;
 
 /**
- * @brief ID for the 'apertium_delete' (with arguments) command
+ * @brief ID for the 'apertium_unbind' (with arguments) command
  *
  * Used to unregister the command on plugin unload
  */
-PurpleCmdId delete_args_command_id;
+PurpleCmdId unbind_args_command_id;
 
 /**
  * @brief ID for the 'apertium_check' command
@@ -293,7 +293,7 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
  * @param data Additional data passed
  * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
  */
-PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
+PurpleCmdRet apertium_bind_cb(PurpleConversation *conv, const gchar *cmd,
 								gchar **args, gchar **error, void *data){
     const char *username;
     char *command, *source, *target, *msg;
@@ -330,7 +330,7 @@ PurpleCmdRet apertium_set_cb(PurpleConversation *conv, const gchar *cmd,
  * @param data Additional data passed
  * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
  */
-PurpleCmdRet apertium_delete_noargs_cb(PurpleConversation *conv, const gchar *cmd,
+PurpleCmdRet apertium_unbind_noargs_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     const char *username;
     char *msg;
@@ -362,7 +362,7 @@ PurpleCmdRet apertium_delete_noargs_cb(PurpleConversation *conv, const gchar *cm
  * @param data Additional data passed
  * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
  */
-PurpleCmdRet apertium_delete_args_cb(PurpleConversation *conv, const gchar *cmd,
+PurpleCmdRet apertium_unbind_args_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     const char *username;
     char *command, *msg;
@@ -554,19 +554,19 @@ gboolean plugin_load(PurplePlugin *plugin){
 						plugin, PURPLE_CALLBACK(receiving_im_msg_cb), plugin);
 
 
-    set_command_id = purple_cmd_register("apertium_set", "s", PURPLE_CMD_P_HIGH,
-        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_set_cb,
-        "apertium_set \'direction\' \'source language\' \'target language\'\nSets the source-target language pair to translate messages from/to this user.\n\'direction\' must be \"incoming\" for received messages, or \"outgoing\" for user-sent messages.\n\'source language\' is the language expected to translate messages from.\n\'target language\' is the language to translate messages to.",
+    bind_command_id = purple_cmd_register("apertium_bind", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_bind_cb,
+        "apertium_bind \'direction\' \'source language\' \'target language\'\nSets the source-target language pair to translate messages from/to this user.\n\'direction\' must be \"incoming\" for received messages, or \"outgoing\" for user-sent messages.\n\'source language\' is the language expected to translate messages from.\n\'target language\' is the language to translate messages to.",
         NULL);
 
-    delete_noargs_command_id = purple_cmd_register("apertium_delete", "", PURPLE_CMD_P_HIGH,
-        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_delete_noargs_cb,
-        "apertium_delete\nRemoves the stored language pair data for this buddy.",
+    unbind_noargs_command_id = purple_cmd_register("apertium_unbind", "", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_unbind_noargs_cb,
+        "apertium_unbind\nRemoves the stored language pair data for this buddy.",
         NULL);
 
-    delete_args_command_id = purple_cmd_register("apertium_delete", "s", PURPLE_CMD_P_HIGH,
-        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_delete_args_cb,
-        "apertium_delete \'direction\'\nRemoves the stored language pair data for this buddy.\n\'direction\' must be \"incoming\" or \"outgoing\".",
+    unbind_args_command_id = purple_cmd_register("apertium_unbind", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM, PLUGIN_ID, apertium_unbind_args_cb,
+        "apertium_unbind \'direction\'\nRemoves the stored language pair data for this buddy.\n\'direction\' must be \"incoming\" or \"outgoing\".",
         NULL);
 
     check_command_id = purple_cmd_register("apertium_check", "", PURPLE_CMD_P_HIGH,
@@ -613,9 +613,9 @@ gboolean plugin_unload(PurplePlugin *plugin){
 
 	purple_signals_disconnect_by_handle(plugin);
 
-	purple_cmd_unregister(set_command_id);
-    purple_cmd_unregister(delete_noargs_command_id);
-    purple_cmd_unregister(delete_args_command_id);
+	purple_cmd_unregister(bind_command_id);
+    purple_cmd_unregister(unbind_noargs_command_id);
+    purple_cmd_unregister(unbind_args_command_id);
     purple_cmd_unregister(check_command_id);
     purple_cmd_unregister(pairs_command_id);
     purple_cmd_unregister(apy_noargs_command_id);
