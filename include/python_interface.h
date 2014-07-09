@@ -26,7 +26,7 @@ void pythonFinalize(void);
 
 char* getAPYAddress(void);
 
-int setAPYAddress(char* address, char* port, int force);
+int setAPYAddress(char* address, char* port, int order, int force);
 
 int dictionaryHasUser(const char* user, const char* direction);
 

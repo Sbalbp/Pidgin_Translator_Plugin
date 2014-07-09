@@ -51,7 +51,7 @@ def setFile(newFileName):
 def createDictionary():
 	global dictionary
 
-	dictionary = {'version':sys.version_info[0], 'apyAddress':'http://localhost:2737', 'incoming':{}, 'outgoing':{}}
+	dictionary = {'version':sys.version_info[0], 'apyAddress':['http://localhost:2737'.encode('utf-8')], 'incoming':{}, 'outgoing':{}}
 
 	file1 = open(fileName, 'wb')
 

@@ -46,7 +46,8 @@ PyObject *iface_module;
  * @param filename Name of the file where the preferences for the plugin will be stored
  */
 void pythonInit(const char* filename){
-    PyObject *pFunc, *pArgs, *address;
+    PyObject *pFunc, *pArgs, *addresses;
+    int size, i;
 
     Py_SetProgramName(NULL);
     Py_Initialize();
@@ -88,12 +89,13 @@ void pythonInit(const char* filename){
 
             PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("apyAddress"));
 
-            address = PyObject_CallObject(pFunc, pArgs);
-            if(address == NULL || address == Py_None){
+            addresses = PyObject_CallObject(pFunc, pArgs);
+            if(addresses == NULL || addresses == Py_None){
                 Py_DECREF(pArgs);
                 Py_XDECREF(pFunc);
                 return;
             }
+            Py_XDECREF(pArgs);
         }
         else {
             return;
@@ -108,11 +110,13 @@ void pythonInit(const char* filename){
     iface_module = PyImport_ImportModule("apertiumpluginutils.apertiumInterfaceAPY");
 
     if (iface_module != NULL) {
-        if(!setAPYAddress(PyBytes_AsString(address), NULL,1)){
-            Py_DECREF(address);
-            return;
+        size = PyList_GET_SIZE(addresses);
+
+        for(i=0; i<size; i++){
+            //setAPYAddress(PyBytes_AsString(PyList_GetItem(addresses,i)), NULL, -1, 1);
         }
-        Py_DECREF(address);
+
+        Py_XDECREF(addresses);
     }
     else{
         notify_error("Failed to load module: \'apertiumInterfaceAPY\'");
@@ -124,8 +128,6 @@ void pythonInit(const char* filename){
  * @brief Finalizes the Python environment
  */
 void pythonFinalize(void){
-    Py_XDECREF(files_module);
-    Py_XDECREF(iface_module);
     Py_Finalize();
 }
 
@@ -176,11 +178,12 @@ char* getAPYAddress(void){
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
  * @param address Pointer to a string with the new address
  * @param port Pointer to a string with the new port. NULL if no port is needed
+ * @param order Position this address will take in the list. Negative value to append at the end
  * @param force Any number that is not 0 indicates the function to forcefully change the address,
  * despite not receiving an answer from the server
  * @return 1 if the call was successful and the address was set, or 0 otherwise
  */
-int setAPYAddress(char* address, char* port, int force){
+int setAPYAddress(char* address, char* port, int order, int force){
     char* msg;
     PyObject *pFunc, *pArg, *pArgs, *new_address;
 
@@ -188,7 +191,7 @@ int setAPYAddress(char* address, char* port, int force){
         pFunc = PyObject_GetAttrString(iface_module, "setAPYAddress");
 
         if (pFunc) {
-            pArgs = PyTuple_New(3);
+            pArgs = PyTuple_New(4);
 
             pArg = PyBytes_FromString(address);
             PyTuple_SetItem(pArgs, 0, pArg);
@@ -196,7 +199,9 @@ int setAPYAddress(char* address, char* port, int force){
             pArg = port == NULL ? Py_None : PyBytes_FromString(port);
             PyTuple_SetItem(pArgs, 1, pArg);
 
-            PyTuple_SetItem(pArgs, 2, force == 0 ? Py_False : Py_True);
+            PyTuple_SetItem(pArgs, 2, order > -1 ? PyLong_FromLong(order) : Py_None);
+
+            PyTuple_SetItem(pArgs, 3, force == 0 ? Py_False : Py_True);
 
             new_address = PyObject_CallObject(pFunc, pArgs);
             Py_DECREF(pArgs);

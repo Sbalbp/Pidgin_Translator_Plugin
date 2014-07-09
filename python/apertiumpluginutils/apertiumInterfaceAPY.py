@@ -41,7 +41,7 @@ import json
 pyVersion = sys.version_info[0]
 
 ## Address of the Apertium-APY
-apyAddress = 'http://localhost:2737'
+apyAddress = ['http://localhost:2737']
 
 ## Parser that will unescape APY responses
 parser = HTMLParser.HTMLParser()
@@ -74,18 +74,19 @@ def checkAPY(address):
 # @return A string with the current APY address
 def getAPYAddress():
 	if(pyVersion >= 3):
-		return apyAddress.encode('utf-8')
+		return apyAddress[0].encode('utf-8')
 	else:
-		return apyAddress
+		return apyAddress[0]
 
 
-## Changes the address where requests to the APY will be sent
+## Adds a new address to the APY addresses list
 #
 # @param newAddress New address for the APY
 # @param newPort Port for the APY. None if no port is needed
+# @param order Position this address will take in the list. None (appends address) by default
 # @param force Forces the address to be set even if there was no response
 # @return The new address if it was set, or None otherwise
-def setAPYAddress(newAddress, newPort=None, force=False):
+def setAPYAddress(newAddress, newPort=None, order=None, force=False):
 	global apyAddress
 
 	if(pyVersion >= 3):
@@ -103,9 +104,15 @@ def setAPYAddress(newAddress, newPort=None, force=False):
 		newAddress = newAddress+':'+newPort
 
 	if(checkAPY(newAddress) or force):
-		apyAddress = newAddress
+		if(order == None):
+			apyAddress.append(newAddress)
+		else:
+			apyAddress.insert(order, newAddress)
 
-		return apyAddress
+		if(pyVersion >= 3):
+			return newAddress.encode('utf-8')
+		else:
+			return newAddress
 	else:
 		return None
 
@@ -120,7 +127,7 @@ def getAllPairs():
 	pairs = []
 
 	try:
-		request = urllib2.urlopen(apyAddress+'/listPairs')
+		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
 	except urllib2.URLError:
 		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
@@ -159,7 +166,7 @@ def getPairsBySource(source):
 			pass
 
 	try:
-		request = urllib2.urlopen(apyAddress+'/listPairs')
+		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
 	except urllib2.URLError:
 		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
@@ -199,7 +206,7 @@ def getPairsByTarget(target):
 			pass
 
 	try:
-		request = urllib2.urlopen(apyAddress+'/listPairs')
+		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
 	except urllib2.URLError:
 		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
@@ -243,7 +250,7 @@ def pairExists(source, target):
 			pass
 
 	try:
-		request = urllib2.urlopen(apyAddress+'/listPairs')
+		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
 	except urllib2.URLError:
 		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 	except urllib2.HTTPError:
@@ -296,9 +303,9 @@ def translate(text, source, target):
 
 			try:
 				if(pyVersion >= 3):
-					request = urllib2.urlopen(parse.quote_plus((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target),safe=':/=?&|',encoding=None,errors=None))
+					request = urllib2.urlopen(parse.quote_plus((apyAddress[0]+'/translate?q='+text+'&langpair='+source+'|'+target),safe=':/=?&|',encoding=None,errors=None))
 				else:
-					request = urllib2.urlopen((apyAddress+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
+					request = urllib2.urlopen((apyAddress[0]+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
 			except urllib2.URLError:
 				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
 			except urllib2.HTTPError:
