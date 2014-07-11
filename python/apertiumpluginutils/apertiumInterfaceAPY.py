@@ -69,14 +69,24 @@ def checkAPY(address):
 
 	return True
 
-## Retrieves the current address where the APY requests are sent
+## Retrieves the length of the APY list
 #
-# @return A string with the current APY address
-def getAPYAddress():
-	if(pyVersion >= 3):
-		return apyAddress[0].encode('utf-8')
+# @return The number of APYs currently in the list
+def getAPYListSize():
+	return len(apyAddress)
+
+## Retrieves an APY from the current APY list
+#
+# @param index Position of the APY to be retrieved from the list. 0 if omitted
+# @return A string with the current APY address on success, or None otherwise
+def getAPYAddress(index=0):
+	if(len(apyAddress) <= index or index < 0):
+		return None
 	else:
-		return apyAddress[0]
+		if(pyVersion >= 3):
+			return apyAddress[index].encode('utf-8')
+		else:
+			return apyAddress[index]
 
 
 ## Adds a new address to the APY addresses list
@@ -116,214 +126,353 @@ def setAPYAddress(newAddress, newPort=None, order=None, force=False):
 	else:
 		return None
 
+## Removes an APY from the APY list
+#
+# @param index Index of the address to remove in the list
+# @return True on success or False otherwise
+def removeAPYAddress(index):
+	global apyAddress
+
+	if(index >= len(apyAddress)):
+		return False
+	else:
+		apyAddress.pop(index)
+		return True
+
+## Retrieves the list of APY addresses
+#
+# @return The list of APY addresses
+def getAPYList():
+	return apyAddress
+
+## Sets a list of APY addresses as the address list
+#
+# @param newList List ocntaining the addresses to be added
+# @return The actual number of APY addresses added
+def setAPYList(newList):
+	global apyAddress
+
+	apyAddress = []
+	success = 0
+
+	for address in newList:
+		if(setAPYAddress(address) != None):
+			success = success+1
+
+	return success
+
 ## Retrieves a list with all the available language pairs
 #
+# @param index Optional integer indicating the position of the address in the list the request should be sent to. <br>
+# Defaults to -1. Used to keep the function from iterating through all the addresses
 # @return A dictionary with the following fields:<br>
 # <b>'ok':</b> True if the call was successful, False otherwise<br>
 # <b>'errorMsg':</b> String with the cause of the error. Only present if <b>'ok'</b> is False<br>
 # <b>'result':</b> List with the language pairs. Only present if <b>'ok'</b> is True<br>
 # Each element of the result list is a list with two string elements: the source and the target languages of the pair, respectively
-def getAllPairs():
-	pairs = []
-
-	try:
-		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
-	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-
-	if(request.getcode() < 300):
-		if(pyVersion >= 3):
-			request = request.read().decode("utf-8")
-			jsonObj = json.loads(request)
-		else:
-			jsonObj = json.load(request)
-
-		for pair in jsonObj['responseData']:
-			pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
-
-		return {'ok':True, 'result':pairs}
-
+def getAllPairs(index=-1):
+	if(index > -1 and index < len(apyAddress)):
+		apyList = [apyAddress[index]]
+		last = 0
 	else:
-		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+		apyList = apyAddress
+		last = len(apyAddress)-1
+
+	for it,address in enumerate(apyList):
+		pairs = []
+
+		try:
+			request = urllib2.urlopen(address+'/listPairs')
+		except urllib2.URLError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+		except urllib2.HTTPError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+
+		if(request.getcode() < 300):
+			if(pyVersion >= 3):
+				request = request.read().decode("utf-8")
+				jsonObj = json.loads(request)
+			else:
+				jsonObj = json.load(request)
+
+			for pair in jsonObj['responseData']:
+				pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
+
+			return {'ok':True, 'result':pairs}
+
+		else:
+			if(it == last):
+				return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+			else:
+				continue
 
 ## Retrieves a list with all the available language pairs that share a common source language
 #
 # @param source String with the source language that the returned pairs must share
+# @param index Optional integer indicating the position of the address in the list the request should be sent to. <br>
+# Defaults to -1. Used to keep the function from iterating through all the addresses
 # @return A dictionary with the following fields:<br>
 # <b>'ok':</b> True if the call was successful, False otherwise<br>
 # <b>'errorMsg':</b> String with the cause of the error. Only present if <b>'ok'</b> is False<br>
 # <b>'result':</b> List with the language pairs. Only present if <b>'ok'</b> is True<br>
 # Each element of the result list is a list with two string elements: the source and the target languages of the pair, respectively
-def getPairsBySource(source):
-	pairs = []
-
-	if(pyVersion >= 3):
-		try:
-			source = source.decode("utf-8")
-		except:
-			pass
-
-	try:
-		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
-	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-
-	if(request.getcode() < 300):
-		if(pyVersion >= 3):
-			request = request.read().decode("utf-8")
-			jsonObj = json.loads(request)
-		else:
-			jsonObj = json.load(request)
-
-		for pair in jsonObj['responseData']:
-			if(pair['sourceLanguage'] == source):
-				pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
-
-		return {'ok':True, 'result':pairs}
-
+def getPairsBySource(source, index=-1):
+	if(index > -1 and index < len(apyAddress)):
+		apyList = [apyAddress[index]]
+		last = 0
 	else:
-		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+		apyList = apyAddress
+		last = len(apyAddress)-1
+
+	for it,address in enumerate(apyList):
+		pairs = []
+
+		if(pyVersion >= 3):
+			try:
+				source = source.decode("utf-8")
+			except:
+				pass
+
+		try:
+			request = urllib2.urlopen(address+'/listPairs')
+		except urllib2.URLError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+		except urllib2.HTTPError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+
+		if(request.getcode() < 300):
+			if(pyVersion >= 3):
+				request = request.read().decode("utf-8")
+				jsonObj = json.loads(request)
+			else:
+				jsonObj = json.load(request)
+
+			for pair in jsonObj['responseData']:
+				if(pair['sourceLanguage'] == source):
+					pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
+
+			return {'ok':True, 'result':pairs}
+
+		else:
+			if(it == last):
+				return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+			else:
+				continue
 
 ## Retrieves a list with all the available language pairs that share a common target language
 #
 # @param target String with the target language that the returned pairs must share
+# @param index Optional integer indicating the position of the address in the list the request should be sent to. <br>
+# Defaults to -1. Used to keep the function from iterating through all the addresses
 # @return A dictionary with the following fields:<br>
 # <b>'ok':</b> True if the call was successful, False otherwise<br>
 # <b>'errorMsg':</b> String with the cause of the error. Only present if <b>'ok'</b> is False<br>
 # <b>'result':</b> List with the language pairs. Only present if <b>'ok'</b> is True<br>
 # Each element of the result list is a list with two string elements: the source and the target languages of the pair, respectively
-def getPairsByTarget(target):
-	pairs = []
-
-	if(pyVersion >= 3):
-		try:
-			target = target.decode("utf-8")
-		except:
-			pass
-
-	try:
-		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
-	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-
-	if(request.getcode() < 300):
-		if(pyVersion >= 3):
-			request = request.read().decode("utf-8")
-			jsonObj = json.loads(request)
-		else:
-			jsonObj = json.load(request)
-
-		for pair in jsonObj['responseData']:
-			if(pair['targetLanguage'] == target):
-				pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
-
-		return {'ok':True, 'result':pairs}
-
+def getPairsByTarget(target, index=-1):
+	if(index > -1 and index < len(apyAddress)):
+		apyList = [apyAddress[index]]
+		last = 0
 	else:
-		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+		apyList = apyAddress
+		last = len(apyAddress)-1
+
+	for it,address in enumerate(apyList):
+		pairs = []
+
+		if(pyVersion >= 3):
+			try:
+				target = target.decode("utf-8")
+			except:
+				pass
+
+		try:
+			request = urllib2.urlopen(address+'/listPairs')
+		except urllib2.URLError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+		except urllib2.HTTPError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+
+		if(request.getcode() < 300):
+			if(pyVersion >= 3):
+				request = request.read().decode("utf-8")
+				jsonObj = json.loads(request)
+			else:
+				jsonObj = json.load(request)
+
+			for pair in jsonObj['responseData']:
+				if(pair['targetLanguage'] == target):
+					pairs.append([ pair['sourceLanguage'].encode("utf-8"), pair['targetLanguage'].encode("utf-8") ])
+
+			return {'ok':True, 'result':pairs}
+
+		else:
+			if(it == last):
+				return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+			else:
+				continue
 
 ## Checks if a given language pair is available
 #
 # @param source String with the source language of the pair to be checked
 # @param target String with the target language of the pair to be checked
+# @param index Optional integer indicating the position of the address in the list the request should be sent to. <br>
+# Defaults to -1. Used to keep the function from iterating through all the addresses
 # @return A dictionary with the following fields:<br>
 # <b>'ok':</b> True if the call was successful, False otherwise<br>
 # <b>'errorMsg':</b> String with the cause of the error. Only present if <b>'ok'</b> is False<br>
 # <b>'result':</b> True if the pair exists, False otherwise. Only present if <b>'ok'</b> is True
-def pairExists(source, target):
-	pairs = []
-
-	if(pyVersion >= 3):
-		try:
-			source = source.decode('utf-8')
-		except:
-			pass
-		try:
-			target = target.decode('utf-8')
-		except:
-			pass
-
-	try:
-		request = urllib2.urlopen(apyAddress[0]+'/listPairs')
-	except urllib2.URLError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-	except urllib2.HTTPError:
-		return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-
-	if(request.getcode() < 300):
-		if(pyVersion >= 3):
-			request = request.read().decode("utf-8")
-			jsonObj = json.loads(request)
-		else:
-			jsonObj = json.load(request)
-
-		for pair in jsonObj['responseData']:
-			if(pair['sourceLanguage'] == source and pair['targetLanguage'] == target):
-				return {'ok':True, 'result':True}
-
-		return {'ok':True, 'result':False}
-
+def pairExists(source, target, index=-1):
+	if(index > -1 and index < len(apyAddress)):
+		apyList = [apyAddress[index]]
+		last = 0
 	else:
-		return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+		apyList = apyAddress
+		last = len(apyAddress)-1
+
+	for it,address in enumerate(apyList):
+		pairs = []
+
+		if(pyVersion >= 3):
+			try:
+				source = source.decode('utf-8')
+			except:
+				pass
+			try:
+				target = target.decode('utf-8')
+			except:
+				pass
+
+		try:
+			request = urllib2.urlopen(address+'/listPairs')
+		except urllib2.URLError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+		except urllib2.HTTPError:
+			if(it == last):
+				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+			else:
+				continue
+
+		if(request.getcode() < 300):
+			if(pyVersion >= 3):
+				request = request.read().decode("utf-8")
+				jsonObj = json.loads(request)
+			else:
+				jsonObj = json.load(request)
+
+			for pair in jsonObj['responseData']:
+				if(pair['sourceLanguage'] == source and pair['targetLanguage'] == target):
+					return {'ok':True, 'result':True}
+
+			if(it == last):
+				return {'ok':True, 'result':False}
+			else:
+				continue
+
+		else:
+			if(it == last):
+				return {'ok':False, 'errorMsg':('Response '+str(request.getcode())+' from APY').encode('utf-8')}
+			else:
+				continue
 
 ## Translates a given text
 #
 # @param text String to be translated
 # @param source String with the language to translate the text from
 # @param target String with the language to translate the text to
+# @param index Optional integer indicating the position of the address in the list the request should be sent to. <br>
+# Defaults to -1. Used to keep the function from iterating through all the addresses
 # @return A dictionary with the following fields:<br>
 # <b>'ok':</b> True if the call was successful, False otherwise<br>
 # <b>'errorMsg':</b> String with the cause of the error. Only present if <b>'ok'</b> is False<br>
 # <b>'result':</b> A string with the translated text. Only present if <b>'ok'</b> is True
-def translate(text, source, target):
-	result = pairExists(source, target)
+def translate(text, source, target, index=-1):
+	if(index > -1 and index < len(apyAddress)):
+		apyList = [apyAddress[index]]
+		last = 0
+	else:
+		apyList = apyAddress
+		last = len(apyAddress)-1
 
-	if(pyVersion >= 3):
-		try:
-			text = text.decode("utf-8")
-		except:
-			pass
-		try:
-			source = source.decode("utf-8")
-		except:
-			pass
-		try:
-			target = target.decode("utf-8")
-		except:
-			pass
+	for it,address in enumerate(apyList):
+		result = pairExists(source, target, it)
 
-	if(result['ok']):
-		if(result['result']):
-
+		if(pyVersion >= 3):
 			try:
-				if(pyVersion >= 3):
-					request = urllib2.urlopen(parse.quote_plus((apyAddress[0]+'/translate?q='+text+'&langpair='+source+'|'+target),safe=':/=?&|',encoding=None,errors=None))
-				else:
-					request = urllib2.urlopen((apyAddress[0]+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
-			except urllib2.URLError:
-				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
-			except urllib2.HTTPError:
-				return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+				text = text.decode("utf-8")
+			except:
+				pass
+			try:
+				source = source.decode("utf-8")
+			except:
+				pass
+			try:
+				target = target.decode("utf-8")
+			except:
+				pass
 
-			if(request.getcode() < 300):
-				if(pyVersion >= 3):
-					request = request.read().decode("utf-8")
-					jsonObj = json.loads(request)
-				else:
-					jsonObj = json.load(request)
+		if(result['ok']):
+			if(result['result']):
 
-				return {'ok':True, 'result':parser.unescape(jsonObj['responseData']['translatedText']).replace('%20',' ').encode('utf-8')}
+				try:
+					if(pyVersion >= 3):
+						request = urllib2.urlopen(parse.quote_plus((address+'/translate?q='+text+'&langpair='+source+'|'+target),safe=':/=?&|',encoding=None,errors=None))
+					else:
+						request = urllib2.urlopen((address+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
+				except urllib2.URLError:
+					if(it == last):
+						return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+					else:
+						continue
+				except urllib2.HTTPError:
+					if(it == last):
+						return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
+					else:
+						continue
+
+				if(request.getcode() < 300):
+					if(pyVersion >= 3):
+						request = request.read().decode("utf-8")
+						jsonObj = json.loads(request)
+					else:
+						jsonObj = json.load(request)
+
+					return {'ok':True, 'result':parser.unescape(jsonObj['responseData']['translatedText']).replace('%20',' ').encode('utf-8')}
+
+				else:
+					if(it == last):
+						return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
+					else:
+						continue
 
 			else:
-				return {'ok':False, 'errorMsg':'Response '+str(request.getcode())+' from APY'}
-
+				if(it == last):
+					return {'ok':False, 'errorMsg':('Pair '+source+'-'+target+' does not exist').encode('utf-8')}
+				else:
+					continue
 		else:
-			return {'ok':False, 'errorMsg':('Pair '+source+'-'+target+' does not exist').encode('utf-8')}
-	else:
-		return result
+			if(it == last):
+				return result
+			else:
+				continue
