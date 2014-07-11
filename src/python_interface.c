@@ -47,7 +47,6 @@ PyObject *iface_module;
  */
 void pythonInit(const char* filename){
     PyObject *pFunc, *pArgs, *addresses;
-    int size, i;
 
     Py_SetProgramName(NULL);
     Py_Initialize();
@@ -110,12 +109,25 @@ void pythonInit(const char* filename){
     iface_module = PyImport_ImportModule("apertiumpluginutils.apertiumInterfaceAPY");
 
     if (iface_module != NULL) {
-        size = PyList_GET_SIZE(addresses);
+        pFunc = PyObject_GetAttrString(iface_module, "setAPYList");
 
-        for(i=0; i<size; i++){
-            //setAPYAddress(PyBytes_AsString(PyList_GetItem(addresses,i)), NULL, -1, 1);
+        if (pFunc) {
+            pArgs = PyTuple_New(1);
+
+            PyTuple_SetItem(pArgs, 0, addresses);
+
+            if(PyObject_CallObject(pFunc, pArgs) == NULL){
+                Py_XDECREF(pFunc);
+                Py_XDECREF(addresses);
+                notify_error("Error on setAPYList(result is null)");
+                return;
+            }
         }
-
+        else {
+            notify_error("Error on setAPYList(pfunc)");
+            return;
+        }
+        Py_XDECREF(pFunc);
         Py_XDECREF(addresses);
     }
     else{
@@ -128,6 +140,8 @@ void pythonInit(const char* filename){
  * @brief Finalizes the Python environment
  */
 void pythonFinalize(void){
+    Py_XDECREF(files_module);
+    Py_XDECREF(iface_module);
     Py_Finalize();
 }
 
