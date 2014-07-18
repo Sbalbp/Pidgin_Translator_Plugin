@@ -24,7 +24,7 @@ void pythonInit(const char* filename);
 
 void pythonFinalize(void);
 
-char* getAPYAddress(void);
+int getAPYAddress(char ***list);
 
 int setAPYAddress(char* address, char* port, int order, int force);
 

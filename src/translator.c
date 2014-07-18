@@ -401,13 +401,22 @@ PurpleCmdRet apertium_unbind_args_cb(PurpleConversation *conv, const gchar *cmd,
  */
 PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
-    char *address;
+    char **addresses, *msg;
+    int i,size;
 
-    if((address = getAPYAddress()) == NULL){
+    if((size = getAPYAddress(&addresses)) == -1){
         return PURPLE_CMD_RET_FAILED;
     }
     else{
-        notify_info("APY address", address);
+        msg = malloc(sizeof(char)*(17+50*size));
+        sprintf(msg,"APY address list:");
+        for(i=0; i<size; i++){
+            sprintf(msg,"%s\n%d - %s",msg,i+1,addresses[i]);
+        }
+
+        notify_info("APY addresses", msg);
+        free(addresses);
+        free(msg);
 
         return PURPLE_CMD_RET_OK;
     }
@@ -581,7 +590,7 @@ gboolean plugin_load(PurplePlugin *plugin){
 
     apy_noargs_command_id = purple_cmd_register("apertium_apy", "", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_apy_noargs_cb,
-        "apertium_apy\nShows the address of the Apertium-APY that will translate messages.",
+        "apertium_apy\nShows a list with all the APYs that will be requested for answers in order.",
         NULL);
 
     apy_args_command_id = purple_cmd_register("apertium_apy", "s", PURPLE_CMD_P_HIGH,

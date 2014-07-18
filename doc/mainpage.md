@@ -54,7 +54,7 @@ It will also generate the documentation in the doc folder.
 The following commands are available for now in the plugin:
 
 <ul>
-<li><b>/apertium_apy <em>address</em> <em>port</em></b> Sets the address and port(optional) where the apy is running. If no arguments are given, it just shows the current address. The default address is http://localhost:2737.</li>
+<li><b>/apertium_apy <em>address</em> <em>port</em></b> Sets the address and port(optional) where the apy is running. If no arguments are given, it just shows the current address list. The default list only address is http://localhost:2737.</li>
 
 <li><b>/apertium_check</b> Shows the current language pairs associated with the buddy whose conversation you issued the command on.</li>
 

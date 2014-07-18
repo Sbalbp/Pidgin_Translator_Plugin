@@ -42,7 +42,7 @@ It will also generate the documentation in the doc folder.
 
 The following commands are available for now in the plugin:
 
-* **/apertium_apy _address_ _port_** Sets the address and port(optional) where the apy is running. If no arguments are given, it just shows the current address. The default address is http://localhost:2737.
+* **/apertium_apy _address_ _port_** Sets the address and port(optional) where the apy is running. If no arguments are given, it just shows the current address list. The default list only address is http://localhost:2737.
 * **/apertium_check** Shows the current language pairs associated with the buddy whose conversation you issued the command on.
 * **/apertium_pairs** Ask the apy which language pairs are available and shows them.
 * **/apertium_bind _direction_ _source_ _target_** Sets a language pair for the buddy whose conversation the command was issued on. *direction* must be either 'incoming' (for incoming messages) or 'outgoing' (for messages sent to that buddy). *source* and *target* are the source and target languages of the language pair to be set, respectively.

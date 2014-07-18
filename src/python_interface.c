@@ -146,17 +146,19 @@ void pythonFinalize(void){
 }
 
 /**
- * @brief Retrieves a string containing the Apertium-APY current address
+ * @brief Retrieves a list with all the APYs
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
- * @return The address if the call was successful, or NULL otherwise
+ * @param list References to a 2-level char array where the apy list will be stored
+ * The list parameter must be freed after its use
+ * @return The number of addresses returned or -1 if an error occured
  */
-char* getAPYAddress(void){
-    char *address;
+int getAPYAddress(char ***list){
+    int i,size;
     PyObject *pFunc, *pArgs, *result;
 
     if (iface_module != NULL) {
-        pFunc = PyObject_GetAttrString(iface_module, "getAPYAddress");
+        pFunc = PyObject_GetAttrString(iface_module, "getAPYList");
 
         if (pFunc) {
             pArgs = PyTuple_New(0);
@@ -164,24 +166,31 @@ char* getAPYAddress(void){
             result = PyObject_CallObject(pFunc, pArgs);
 
             if (result != NULL) {
-                address = PyBytes_AsString(result);
+
+                size = PyList_GET_SIZE(result);
+
+                *list = malloc(sizeof(char*)*size);
+                for(i=0; i<size; i++){
+                    (*list)[i] = PyBytes_AsString(PyList_GetItem(result,i));
+                }
+
                 Py_DECREF(pFunc);
                 Py_XDECREF(result);
-                return address;
+                return size;
             }
             else {
                 Py_DECREF(pFunc);
-                return NULL;
+                return -1;
             }
         }
         else {
-            return NULL;
+            return -1;
         }
         Py_XDECREF(pFunc);
     }
     else {
         notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
-        return NULL;
+        return -1;
     }
 }
 

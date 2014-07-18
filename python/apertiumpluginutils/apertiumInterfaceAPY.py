@@ -143,7 +143,15 @@ def removeAPYAddress(index):
 #
 # @return The list of APY addresses
 def getAPYList():
-	return apyAddress
+	addrList = []
+
+	for address in apyAddress:
+		if(pyVersion >= 3):
+			addrList.append(address.encode('utf-8'))
+		else:
+			addrList.append(address)
+
+	return addrList
 
 ## Sets a list of APY addresses as the address list
 #
@@ -156,7 +164,7 @@ def setAPYList(newList):
 	success = 0
 
 	for address in newList:
-		if(setAPYAddress(address) != None):
+		if(setAPYAddress(address, force=True) != None):
 			success = success+1
 
 	return success
