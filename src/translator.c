@@ -129,6 +129,47 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
 }
 
 /**
+ * @brief Parses and returns arguments for 'apertium_apy' command
+ *
+ * This function expects 1 to 3 arguments. Passing less than 1 argument in args will result in an error. Arguments after the third one will be ignored
+ * @param args String containing the arguments passed to the command (separated by whitespaces)
+ * @param order Reference to a integer where the 'order' argument (optional) will be stored
+ * @param address Reference to a string where the 'address' argument will be stored
+ * @param port Reference to a string where the 'port' argument (optional) will be stored
+ * @return 1 on success, or 0 otherwise
+ */
+int parse_apy_arguments(char* args, int *order, char **address, char **port){
+
+    char *str;
+
+    if((*address = strtok(args," ")) == NULL){
+        notify_error("No 'address' argument provided");
+        return 0;
+    }
+
+    str = malloc(sizeof(char)*100);
+    sprintf(str, "%d", atoi(*address));
+
+    if(strcmp(str, *address) == 0){
+        free(str);
+        *order = atoi(*address);
+
+        if((*address = strtok(NULL," ")) == NULL){
+            notify_error("No 'address' argument provided");
+            return 0;
+        }
+    }
+    else{
+        free(str);
+        *order = -1;
+    }
+
+    *port = strtok(NULL," ");
+
+    return 1;
+}
+
+/**
  * @brief Parses and returns arguments for 'apertium_set' command
  *
  * This function expects exactly 3 arguments. Passing less than 3 arguments in args will result in an error. Arguments after the third one will be ignored
@@ -259,13 +300,19 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
     }
 
     title = malloc(sizeof(char)*100);
-    text = malloc(sizeof(char)*300);
+    text = malloc(sizeof(char)*size*50);
 
     sprintf(title, "available pairs");
     sprintf(text, " ");
 
     for(i=0; i<size; i++){
-        sprintf(text,"%s%s - %s\n", text, pairsList[i][0], pairsList[i][1]);
+        sprintf(text,"%s%s - %s", text, pairsList[i][0], pairsList[i][1]);
+        if(i%3 == 2){
+            sprintf(text,"%s\n",text);
+        }
+        else{
+            sprintf(text,"%s\t",text);
+        }
     }
 
     sprintf(text,"%s", text);
@@ -436,18 +483,18 @@ PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
 PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     char *address, *port;
+    int order;
 
-    if((address = strtok(*args," ")) == NULL){
-        notify_error("No address provided");
+    if(parse_apy_arguments(*args, &order, &address, &port)){
+        if(!setAPYAddress(address, port, order, 0)){
+            return PURPLE_CMD_RET_FAILED;
+        }
+    }
+    else{
         return PURPLE_CMD_RET_FAILED;
     }
 
-    port = strtok(NULL," ");
-    if(!setAPYAddress(address,port, -1, 0)){
-        return PURPLE_CMD_RET_FAILED;
-    }
-
-    notify_info("Success","APY address successfully changed");
+    notify_info("Success","APY address successfully set");
     return PURPLE_CMD_RET_OK;
 }
 

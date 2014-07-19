@@ -244,12 +244,10 @@ int setAPYAddress(char* address, char* port, int order, int force){
 
                             PyObject_CallObject(pFunc, pArgs);
 
-                            Py_DECREF(pArgs);
-                            Py_DECREF(pFunc);
-                            Py_DECREF(new_address);
+                            Py_XDECREF(new_address);
                         }
                         else{
-                            Py_DECREF(new_address);
+                            Py_XDECREF(new_address);
                             return 0;
                         }
                     }
@@ -609,7 +607,7 @@ int getAllPairs(char**** pairList){
                 }
             }
             else {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 return 0;
             }
         }
