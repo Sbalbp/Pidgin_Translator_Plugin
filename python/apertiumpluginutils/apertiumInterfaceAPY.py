@@ -95,7 +95,7 @@ def getAPYAddress(index=0):
 # @param newPort Port for the APY. None if no port is needed
 # @param order Position this address will take in the list. None (appends address) by default
 # @param force Forces the address to be set even if there was no response
-# @return The new address if it was set, or None otherwise
+# @return The new address list if it was changed, or None otherwise
 def setAPYAddress(newAddress, newPort=None, order=None, force=False):
 	global apyAddress
 
@@ -119,10 +119,7 @@ def setAPYAddress(newAddress, newPort=None, order=None, force=False):
 		else:
 			apyAddress.insert(order, newAddress)
 
-		if(pyVersion >= 3):
-			return newAddress.encode('utf-8')
-		else:
-			return newAddress
+		return getAPYList()
 	else:
 		return None
 
