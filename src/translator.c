@@ -38,6 +38,16 @@
 #include "version.h"
 
 /**
+ * @brief Describes the different ways in which a translated message can be shown
+ */
+typedef enum {BOTH, TRANSLATION} display_mode;
+
+/**
+ * @brief Variable containing the display_mode value that tell the plugin how messages should be shown
+ */
+display_mode display = BOTH;
+
+/**
  * @brief ID for the 'apertium_bind' command
  *
  * Used to unregister the command on plugin unload
@@ -87,6 +97,13 @@ PurpleCmdId apy_noargs_command_id;
 PurpleCmdId apy_args_command_id;
 
 /**
+ * @brief ID for the 'apertium_display' command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId display_command_id;
+
+/**
  * @brief ID for the 'apertium_errors' command
  *
  * Used to unregister the command on plugin unload
@@ -120,8 +137,16 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
             dictionaryGetUserLanguage(username, key, "target"));
 
         if(translation != NULL){
-            *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+21));
-            sprintf(*message,"\n%s\n-----------------\n%s",oldMsg,translation);
+            switch(display){
+                case BOTH:
+                    *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+100));
+                    sprintf(*message,"\nOriginal:\n-----------------\n%s\n\nTranslation:\n-----------------\n%s\n",oldMsg,translation);
+                    break;
+                case TRANSLATION:
+                    *message = (char*)realloc(*message, sizeof(char)*(strlen(translation)+100));
+                    sprintf(*message,"%s\n",translation);
+                    break;
+            }
         }
 
         free(oldMsg);
@@ -499,6 +524,43 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
 }
 
 /**
+ * @brief Callback for the 'apertium_display' command
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_display_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    char *mode;
+
+    if((mode = strtok(*args," ")) == NULL){
+        notify_error("No mode argument provided");
+        return PURPLE_CMD_RET_FAILED;
+    }
+    else{
+        if(!strcmp(mode,"both")){
+            display = BOTH;
+        }
+        else{
+            if(!strcmp(mode,"translation")){
+                display = TRANSLATION;
+            }
+            else{
+                notify_error("mode argument must be \"both\" or \"translation\"");
+                return PURPLE_CMD_RET_FAILED;
+            }
+        }
+    }
+
+    return PURPLE_CMD_RET_OK;
+}
+
+/**
  * @brief Callback for the 'apertium_errors' command
  *
  * Refer to the libpurple Commands API documentation for more information
@@ -645,6 +707,11 @@ gboolean plugin_load(PurplePlugin *plugin){
         "apertium_apy \'address\' \'port\'\nSets the address where the Apertium-APY is located.\nThe \'port\' argument is optional",
         NULL);
 
+    display_command_id = purple_cmd_register("apertium_display", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_display_cb,
+        "apertium_display \'display_mode\'\nSets the display mode for translated messages.\nThe \'display_mode\' argument must be either \"both\" (displays the original message and its translation) or \"translation\" (displays only the translation)",
+        NULL);
+
     errors_command_id = purple_cmd_register("apertium_errors", "s", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_errors_cb,
         "apertium_errors \'switch\'\nTurns on/off the error notification messages.\nThe \'switch\' argument must be either \"on\" or \"off\"",
@@ -676,6 +743,7 @@ gboolean plugin_unload(PurplePlugin *plugin){
     purple_cmd_unregister(pairs_command_id);
     purple_cmd_unregister(apy_noargs_command_id);
     purple_cmd_unregister(apy_args_command_id);
+    purple_cmd_unregister(display_command_id);
     purple_cmd_unregister(errors_command_id);
 
 	pythonFinalize();
