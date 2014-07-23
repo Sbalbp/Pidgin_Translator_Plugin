@@ -28,6 +28,10 @@ int getAPYAddress(char ***list);
 
 int setAPYAddress(char* address, char* port, int order, int force);
 
+const char* getDisplay(void);
+
+int setDisplay(const char* display_mode);
+
 int dictionaryHasUser(const char* user, const char* direction);
 
 char* dictionaryGetUserLanguage(const char* user, const char* direction, const char* key);

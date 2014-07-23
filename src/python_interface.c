@@ -286,6 +286,97 @@ int setAPYAddress(char* address, char* port, int order, int force){
 }
 
 /**
+ * @brief Returns the value for the display_mode stored in the preferences file
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @return The display_mode value on success or NULL otherwise
+ */
+const char* getDisplay(void){
+    int mode;
+    PyObject *pFunc, *pArgs, *result;
+
+    if(files_module != NULL){
+        pFunc = PyObject_GetAttrString(files_module, "getKey");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(1);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("displayMode"));
+
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            Py_XDECREF(pArgs);
+
+            if(result != NULL && result != Py_None){
+                mode = (int)PyLong_AsLong(result);
+                Py_XDECREF(result);
+                if(mode == 0){
+                    return "both";
+                }
+                else{
+                    return "translation";
+                }
+            }
+            else{
+                Py_XDECREF(pFunc);
+                return NULL;
+            }
+        }
+        else{
+            return NULL;
+        }
+    }
+    else{
+        notify_error("Module: \'apertiumFiles\' is not loaded");
+        return NULL;
+    }
+}
+
+/**
+ * @brief Sets the display_mode value in the dictionary so that it is store in the preferences file
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param display_mode The display_mode. Must be 'both' or 'translation'
+ * @return 1 on success or 0 otherwise
+ */
+int setDisplay(const char* display_mode){
+    int mode;
+    PyObject *pFunc, *pArgs;
+
+    if(!strcmp("both",display_mode)){
+        mode = 0;
+    }
+    else{
+        mode = 1;
+    }
+
+    if(files_module != NULL){
+        pFunc = PyObject_GetAttrString(files_module, "setKey");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(2);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("displayMode"));
+
+            PyTuple_SetItem(pArgs, 1, PyLong_FromLong((long)mode));
+
+            PyObject_CallObject(pFunc, pArgs);
+
+            Py_XDECREF(pArgs);
+        }
+        else{
+            return 0;
+        }
+        Py_XDECREF(pFunc);
+        return 1;
+    }
+    else{
+        notify_error("Module: \'apertiumFiles\' is not loaded");
+        return 0;
+    }
+}
+
+/**
  * @brief Checks whether the dictionary contains language pair information for a given user
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)

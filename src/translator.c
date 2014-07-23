@@ -545,10 +545,12 @@ PurpleCmdRet apertium_display_cb(PurpleConversation *conv, const gchar *cmd,
     else{
         if(!strcmp(mode,"both")){
             display = BOTH;
+            setDisplay("both");
         }
         else{
             if(!strcmp(mode,"translation")){
                 display = TRANSLATION;
+                setDisplay("translation");
             }
             else{
                 notify_error("mode argument must be \"both\" or \"translation\"");
@@ -719,6 +721,18 @@ gboolean plugin_load(PurplePlugin *plugin){
 
 	// Python embedding
 	pythonInit("apertium_pidgin_plugin_preferences.pkl");
+
+    // Retrieving the displayMode
+    const char* mode = getDisplay();
+
+    if(mode != NULL){
+        if(!strcmp(mode,"both")){
+            display = BOTH;
+        }
+        else{
+            display = TRANSLATION;
+        }
+    }
 
 	return TRUE;
 }
