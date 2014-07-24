@@ -64,7 +64,7 @@ The following commands are available for now in the plugin:
 
 <li><b>/apertium_unbind <em>direction</em></b> Delete language pair data for the buddy whose conversation the command was issued on. <em>direction</em> is an optional argument. If present, it must be either 'incoming' or 'outgoing', to delete the language pair bindings for incoming or outgoing messages, respectively. If omitted, all language pair bindings are deleted.</li>
 
-<li><b><em>apertium_display _displayMode</em></b> Selects how the messages should be displayed. <em>displayMode</em> can be either 'both' (the translation and the original message are both displayed) or 'translation' (only the translated message is displayed).</li>
+<li><b><em>apertium_display _displayMode</em></b> Selects how the messages should be displayed. <em>displayMode</em> (optional) can be either 'both' (the translation and the original message are both displayed) or 'translation' (only the translated message is displayed). If no argument is passed, the current display mode is shown.</li>
 
 <li><b>/apertium_errors <em>switch</em></b> Turns on/off the error notifications from the plugin. <em>switch</em> must be either 'on' (enable notifications) or 'off' (disable notifications).</li>
 </ul>
