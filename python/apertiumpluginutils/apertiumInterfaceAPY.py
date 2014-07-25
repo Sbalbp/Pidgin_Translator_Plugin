@@ -25,7 +25,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 try:
 	import urllib.parse as parse
 except:
-	pass
+	import urllib as parse
 try:
     import urllib.request as urllib2
 except:
@@ -441,10 +441,7 @@ def translate(text, source, target, index=-1):
 			if(result['result']):
 
 				try:
-					if(pyVersion >= 3):
-						request = urllib2.urlopen(parse.quote_plus((address+'/translate?q='+text+'&langpair='+source+'|'+target),safe=':/=?&|',encoding=None,errors=None))
-					else:
-						request = urllib2.urlopen((address+'/translate?q='+text+'&langpair='+source+'|'+target).replace(' ','%20'))
+					request = urllib2.urlopen(address+'/translate?q='+parse.quote_plus(text)+'&langpair='+source+'|'+target)
 				except urllib2.URLError:
 					if(it == last):
 						return {'ok':False, 'errorMsg':'Error on connection'.encode('utf-8')}
