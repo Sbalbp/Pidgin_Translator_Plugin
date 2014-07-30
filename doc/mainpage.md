@@ -25,7 +25,7 @@ The translating is done by an <a href="http://wiki.apertium.org/wiki/Apy">Aperti
 
 <h3><b>Compiling and installing</b></h3>
 
-For this plugin to work, it is first necessary to install the python module included in this repository under the 'python' folder, as it is used by the plugin:
+For this plugin to work, it is first necessary to install the python module included in this repository (as a submodule) under the 'Apertium_Plugin_Utils' folder, as it is used by the plugin:
 
 <ul>
 <li>python setup.py install</li>

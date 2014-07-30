@@ -1,0 +1,3 @@
+[submodule "Apertium_Plugin_Utils"]
+	path = Apertium_Plugin_Utils
+	url = https://github.com/Sbalbp/Apertium_Plugin_Utils.git
