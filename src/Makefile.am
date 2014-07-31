@@ -37,7 +37,7 @@ AM_PLUGIN_DIR = ~/.purple/plugins
 all-local: $(AM_PLUGIN_DIR) $(AM_SO) $(AM_SO)/translator.so
 	cp -fv $(AM_SO)/translator.so $(AM_PLUGIN_DIR)/translator.so
 
-$(PLUGIN_DIR):
+$(AM_PLUGIN_DIR):
 	$(MKDIR_P) $(AM_PLUGIN_DIR)
 
 $(AM_SO)/translator.so: $(AM_SO) $(AM_OBJ) $(AM_SRC)/translator.c $(AM_OBJ)/python_interface.o $(AM_OBJ)/notifications.o
