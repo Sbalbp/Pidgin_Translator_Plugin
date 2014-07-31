@@ -14,17 +14,25 @@ The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "
 ###Compilation Requirements
 
 * **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial") ).
-* **glib2.0.** Install package libglib2.0
+* **glib2.0.** Install package libglib2.0-dev
 * **Python.** Install package python-dev
 * **(Optional)[Apertium-apy](http://wiki.apertium.org/wiki/Apy "Apertium-apy").** Needed if you intend to run your own apy in your machine.
 
 ###Compiling and installing
 
-For this plugin to work, it is first necessary to install the python module included in this repository (as a submodule) under the 'Apertium_Plugin_Utils' folder, as it is used by the plugin:
+For this plugin to work, it is first necessary to install the Python module included in this repository under the 'Apertium_Plugin_Utils' folder, as it is used by the plugin.
+
+If you have just cloned this repository you will need to first update the submodule:
+
+* ./updateSub.sh
+
+this will always fetch the latest version of the Python module, so it can be used to keep it up to date.
+
+Now that you have the Python module, you might want to install it:
 
 * python setup.py install
 
-To compile the plugin, run
+Now, to compile the plugin, run
 
 * ./autogen.sh
 
