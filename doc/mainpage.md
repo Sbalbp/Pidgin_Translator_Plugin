@@ -58,7 +58,7 @@ The following commands are available for now in the plugin:
 
 For example, if the APY list look like [address1, address2, address3] and we issue the command '/apertium_apy 1 http://localhost 2737', it will insert the address http://localhost:2737 to the APY list in the position number 1, pushing back ay other APY, which results in the following APY list: [address1, http://localhost:2737, address2, address3]. This means that the new address wil take priority over address2 and address3 when issuing a command that makes a request to an APY, but it will always be asked after address1.
 
-The default list only address is http://localhost:2737. The address 'http://apy.projectjj.com' can be added to the list. This address, however, is not guaranteed to work 100% of the times, as it is still in test stage.</li>
+The default list only address is http://localhost:2737. The address http://apy.projectjj.com can be added to the list. This address, however, is not guaranteed to work 100% of the times, as it is still in test stage.</li>
 
 <li><b>/apertium_check</b> Shows the current language pairs associated with the buddy whose conversation you issued the command on.</li>
 
