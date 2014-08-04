@@ -28,6 +28,8 @@ int getAPYAddress(char ***list);
 
 int setAPYAddress(char* address, char* port, int order, int force);
 
+int removeAPYAddress(int position);
+
 const char* getDisplay(void);
 
 int setDisplay(const char* display_mode);

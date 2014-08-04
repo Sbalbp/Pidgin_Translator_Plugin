@@ -286,6 +286,48 @@ int setAPYAddress(char* address, char* port, int order, int force){
 }
 
 /**
+ * @brief Removes the APY address at the given position in the APY list
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param position Position in the list of the address to be removed
+ * @return 1 on success, or 0 otherwise
+ */
+int removeAPYAddress(int position){
+    PyObject *pFunc, *pArgs, *result;
+
+    if(iface_module != NULL){
+        pFunc = PyObject_GetAttrString(iface_module, "removeAPYAddress");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(1);
+
+            PyTuple_SetItem(pArgs, 0, PyLong_FromLong((long)position));
+
+            result = PyObject_CallObject(pFunc, pArgs);
+
+            Py_XDECREF(pArgs);
+
+            if(result != NULL && result != Py_False){
+                Py_XDECREF(result);
+                Py_XDECREF(pFunc);
+                return 1;
+            }
+            else{
+                Py_XDECREF(pFunc);
+                return 0;
+            }
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
+        return 0;
+    }
+}
+
+/**
  * @brief Returns the value for the display_mode stored in the preferences file
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)

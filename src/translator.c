@@ -97,6 +97,13 @@ PurpleCmdId apy_noargs_command_id;
 PurpleCmdId apy_args_command_id;
 
 /**
+ * @brief ID for the 'apertium_apyremove' command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId apyremove_command_id;
+
+/**
  * @brief ID for the 'apertium_display' (without arguments) command
  *
  * Used to unregister the command on plugin unload
@@ -531,6 +538,38 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
 }
 
 /**
+ * @brief Callback for the 'apertium_apyremove' command
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_apyremove_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    char *position_str;
+    int position;
+
+    if((position_str = strtok(*args," ")) == NULL){
+        notify_error("No 'position' argument provided");
+        return PURPLE_CMD_RET_FAILED;
+    }
+    else{
+        position = atoi(position_str);
+        if(!removeAPYAddress(position)){
+            notify_error("Couldn't remove the APY address");
+            return PURPLE_CMD_RET_FAILED;
+        }
+    }
+
+    notify_info("Success","APY address successfully removed");
+    return PURPLE_CMD_RET_OK;
+}
+
+/**
  * @brief Callback for the 'apertium_display' command when no arguments are passed
  *
  * Refer to the libpurple Commands API documentation for more information
@@ -749,6 +788,11 @@ gboolean plugin_load(PurplePlugin *plugin){
         "apertium_apy \'address\' \'port\'\nSets the address where the Apertium-APY is located.\nThe \'port\' argument is optional",
         NULL);
 
+    apyremove_command_id = purple_cmd_register("apertium_apyremove", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_apyremove_cb,
+        "apertium_apyremove \'position\'\nRemoves the APY address located at the given position in the APY list",
+        NULL);
+
     display_noargs_command_id = purple_cmd_register("apertium_display", "", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_display_noargs_cb,
         "apertium_display\nShows the current diplay mode.",
@@ -802,6 +846,7 @@ gboolean plugin_unload(PurplePlugin *plugin){
     purple_cmd_unregister(pairs_command_id);
     purple_cmd_unregister(apy_noargs_command_id);
     purple_cmd_unregister(apy_args_command_id);
+    purple_cmd_unregister(apyremove_command_id);
     purple_cmd_unregister(display_noargs_command_id);
     purple_cmd_unregister(display_args_command_id);
     purple_cmd_unregister(errors_command_id);

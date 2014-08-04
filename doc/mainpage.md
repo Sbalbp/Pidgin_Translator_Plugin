@@ -39,9 +39,9 @@ Now that you have the Python module, you might want to install it:
 
 <ul>
 <li>python setup.py install</li>
-<ul>
+</ul>
 
-Now, to compile the plugin, run
+Now, to compile the plugin, run:
 
 <ul>
 <li>./autogen.sh</li>
