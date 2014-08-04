@@ -30,6 +30,10 @@ int setAPYAddress(char* address, char* port, int order, int force);
 
 int removeAPYAddress(int position);
 
+int setFileAPYList(PyObject* list);
+
+int updateFileAddresses(void);
+
 const char* getDisplay(void);
 
 int setDisplay(const char* display_mode);

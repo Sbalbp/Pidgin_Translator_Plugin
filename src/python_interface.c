@@ -62,7 +62,7 @@ void pythonInit(const char* filename){
             PyTuple_SetItem(pArgs, 0, PyUnicode_FromString(filename));
 
             PyObject_CallObject(pFunc, pArgs);
-            Py_DECREF(pArgs);
+            Py_XDECREF(pArgs);
         }
         else {
             return;
@@ -74,7 +74,7 @@ void pythonInit(const char* filename){
         if (pFunc) {
             pArgs = PyTuple_New(0);
             PyObject_CallObject(pFunc, pArgs);
-            Py_DECREF(pArgs);
+            Py_XDECREF(pArgs);
         }
         else {
             return;
@@ -90,7 +90,7 @@ void pythonInit(const char* filename){
 
             addresses = PyObject_CallObject(pFunc, pArgs);
             if(addresses == NULL || addresses == Py_None){
-                Py_DECREF(pArgs);
+                Py_XDECREF(pArgs);
                 Py_XDECREF(pFunc);
                 return;
             }
@@ -140,8 +140,6 @@ void pythonInit(const char* filename){
  * @brief Finalizes the Python environment
  */
 void pythonFinalize(void){
-    Py_XDECREF(files_module);
-    Py_XDECREF(iface_module);
     Py_Finalize();
 }
 
@@ -174,12 +172,12 @@ int getAPYAddress(char ***list){
                     (*list)[i] = PyBytes_AsString(PyList_GetItem(result,i));
                 }
 
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 Py_XDECREF(result);
                 return size;
             }
             else {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 return -1;
             }
         }
@@ -227,8 +225,8 @@ int setAPYAddress(char* address, char* port, int order, int force){
             PyTuple_SetItem(pArgs, 3, force == 0 ? Py_False : Py_True);
 
             new_address = PyObject_CallObject(pFunc, pArgs);
-            Py_DECREF(pArgs);
-            Py_DECREF(pFunc);
+            Py_XDECREF(pArgs);
+            Py_XDECREF(pFunc);
 
             if (new_address != NULL){
                 if(new_address != Py_None){
@@ -310,10 +308,96 @@ int removeAPYAddress(int position){
             if(result != NULL && result != Py_False){
                 Py_XDECREF(result);
                 Py_XDECREF(pFunc);
-                return 1;
+
+                if(updateFileAddresses()){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
             }
             else{
                 Py_XDECREF(pFunc);
+                return 0;
+            }
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        notify_error("Module: \'apertiumInterfaceAPY\' is not loaded");
+        return 0;
+    }
+}
+
+/**
+ * @brief Sets the APY list key in the dictionary
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @param list APY list to be set
+ * @return 1 on success, or 0 otherwise
+ */
+int setFileAPYList(PyObject* list){
+    PyObject *pFunc, *pArgs;
+
+    if(files_module != NULL){
+        pFunc = PyObject_GetAttrString(files_module, "setKey");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(2);
+
+            PyTuple_SetItem(pArgs, 0, PyUnicode_FromString("apyAddress"));
+
+            PyTuple_SetItem(pArgs, 1, list);
+
+            PyObject_CallObject(pFunc, pArgs);
+
+            Py_XDECREF(pArgs);
+            Py_XDECREF(pFunc);
+
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        notify_error("Module: \'apertiumFiles\' is not loaded");
+        return 0;
+    }
+}
+
+/**
+ * @brief Writes to the preferences files the latest changes to the APY address list
+ *
+ * pythonInit() must have been called before or an error will occur (the module is not loaded)
+ * @return 1 on success, or 0 otherwise
+ */
+int updateFileAddresses(void){
+    PyObject *pFunc, *pArgs, *list;
+
+    if(iface_module != NULL){
+        pFunc = PyObject_GetAttrString(iface_module, "getAPYList");
+
+        if (pFunc) {
+            pArgs = PyTuple_New(0);
+
+            list = PyObject_CallObject(pFunc, pArgs);
+
+            Py_XDECREF(pArgs);
+            Py_XDECREF(pFunc);
+
+            if(list != NULL){
+
+                if(setFileAPYList(list)){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }
+            }
+            else{
                 return 0;
             }
         }
@@ -438,7 +522,7 @@ int dictionaryHasUser(const char* user, const char* direction){
                 PyDict_GetItemString(dictionary, direction),
                 PyUnicode_FromString(user));
 
-    Py_DECREF(dictionary);
+    Py_XDECREF(dictionary);
     return has_user;
 }
 
@@ -462,7 +546,7 @@ char* dictionaryGetUserLanguage(const char *user, const char* direction, const c
     user_lang = PyBytes_AsString(PyDict_GetItemString(
                     PyDict_GetItemString(PyDict_GetItemString(dictionary, direction), user),key));
 
-    Py_DECREF(dictionary);
+    Py_XDECREF(dictionary);
     return user_lang;
 }
 
@@ -497,21 +581,21 @@ int dictionarySetUserEntry(const char* user, const char* direction, const char* 
 
             if(result != NULL){
                 if(result == Py_True){
-                    Py_DECREF(result);
-                    Py_DECREF(pFunc);
-                    Py_DECREF(pArgs);
+                    Py_XDECREF(result);
+                    Py_XDECREF(pFunc);
+                    Py_XDECREF(pArgs);
                     return 1;
                 }
                 else{
-                    Py_DECREF(result);
-                    Py_DECREF(pFunc);
-                    Py_DECREF(pArgs);
+                    Py_XDECREF(result);
+                    Py_XDECREF(pFunc);
+                    Py_XDECREF(pArgs);
                     return 0;
                 }
             }
             else{
-                Py_DECREF(pFunc);
-                Py_DECREF(pArgs);
+                Py_XDECREF(pFunc);
+                Py_XDECREF(pArgs);
                 return 0;
             }
         }
@@ -550,21 +634,21 @@ int dictionaryRemoveUserEntry(const char* user, char* entry){
 
             if(result != NULL){
                 if(result == Py_True){
-                    Py_DECREF(result);
-                    Py_DECREF(pFunc);
-                    Py_DECREF(pArgs);
+                    Py_XDECREF(result);
+                    Py_XDECREF(pFunc);
+                    Py_XDECREF(pArgs);
                     return 1;
                 }
                 else{
-                    Py_DECREF(result);
-                    Py_DECREF(pFunc);
-                    Py_DECREF(pArgs);
+                    Py_XDECREF(result);
+                    Py_XDECREF(pFunc);
+                    Py_XDECREF(pArgs);
                     return 0;
                 }
             }
             else{
-                Py_DECREF(pFunc);
-                Py_DECREF(pArgs);
+                Py_XDECREF(pFunc);
+                Py_XDECREF(pArgs);
                 return 0;
             }
         }
@@ -601,7 +685,7 @@ int dictionaryRemoveUserEntries(const char* user){
     }
 
     setDictionary(dictionary);
-    Py_DECREF(dictionary);
+    Py_XDECREF(dictionary);
 
     return 1;
 }
@@ -627,7 +711,7 @@ PyObject* getDictionary(void){
                 return result;
             }
             else {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 return Py_None;
             }
         }
@@ -782,7 +866,7 @@ int pairExists(char* source, char* target){
 
             if (result != NULL) {
                 if(PyDict_GetItemString(result,"ok") == Py_True){
-                    Py_DECREF(pFunc);
+                    Py_XDECREF(pFunc);
 
                     if(PyDict_GetItemString(result,"result") == Py_True){
                         return 1;
@@ -793,13 +877,13 @@ int pairExists(char* source, char* target){
                     }
                 }
                 else{
-                    Py_DECREF(pFunc);
+                    Py_XDECREF(pFunc);
                     notify_error(PyBytes_AsString(PyDict_GetItemString(result,"errorMsg")));
                     return 0;
                 }
             }
             else {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 return 0;
             }
         }
@@ -842,10 +926,10 @@ char* translate(char* text, char* source, char* target){
             result = PyObject_CallObject(pFunc, pArgs);
 
             if (result != NULL) {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 if(PyDict_GetItemString(result,"ok") == Py_True){
                     translation = PyBytes_AsString(PyDict_GetItemString(result,"result"));
-                    Py_DECREF(result);
+                    Py_XDECREF(result);
 
                     return translation;
                 }
@@ -855,7 +939,7 @@ char* translate(char* text, char* source, char* target){
                 }
             }
             else {
-                Py_DECREF(pFunc);
+                Py_XDECREF(pFunc);
                 notify_error("There was an error in the translate call");
                 return NULL;
             }

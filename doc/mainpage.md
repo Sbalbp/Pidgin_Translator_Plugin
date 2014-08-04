@@ -70,6 +70,8 @@ For example, if the APY list look like [address1, address2, address3] and we iss
 
 The default list only address is http://localhost:2737. The address http://apy.projectjj.com can be added to the list. This address, however, is not guaranteed to work 100% of the times, as it is still in test stage.</li>
 
+<li><b>/apertium_apyremove <em>position</em><b> Removes the APY address located at the given <em>position</em> in the APY list.</li>
+
 <li><b>/apertium_check</b> Shows the current language pairs associated with the buddy whose conversation you issued the command on.</li>
 
 <li><b>/apertium_pairs</b> Ask the apy which language pairs are available and shows them.</li>
