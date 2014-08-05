@@ -102,7 +102,7 @@ void pythonInit(const char* filename){
         Py_XDECREF(pFunc);
     }
     else {
-        notify_error("Failed to load module: \'apertiumFiles\'");
+        notify_error_popup("Failed to load module: \'apertiumFiles\'");
         return;
     }
 
@@ -119,19 +119,19 @@ void pythonInit(const char* filename){
             if(PyObject_CallObject(pFunc, pArgs) == NULL){
                 Py_XDECREF(pFunc);
                 Py_XDECREF(addresses);
-                notify_error("Error on setAPYList(result is null)");
+                notify_error_popup("Error on setAPYList(result is null)");
                 return;
             }
         }
         else {
-            notify_error("Error on setAPYList(pfunc)");
+            notify_error_popup("Error on setAPYList(pfunc)");
             return;
         }
         Py_XDECREF(pFunc);
         Py_XDECREF(addresses);
     }
     else{
-        notify_error("Failed to load module: \'apertiumInterfaceAPY\'");
+        notify_error_popup("Failed to load module: \'apertiumInterfaceAPY\'");
         return;
     }
 }

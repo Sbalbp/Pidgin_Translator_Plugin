@@ -32,6 +32,13 @@
 PurplePlugin *translator_plugin_handle = NULL;
 
 /**
+ * @brief The current conversation
+ *
+ * This is the ocnversation where notification will be displayed on
+ */
+PurpleConversation *current_conversation = NULL;
+
+/**
  * @brief Indicates whether or not error messages should be shown
  */
 int errors_on = 1;
@@ -47,11 +54,21 @@ void set_translator_plugin(PurplePlugin* plugin){
 }
 
 /**
+ * @brief Sets the current conversation variable
+ *
+ * @param conversation New conversation to assign
+ */
+void set_conversation(PurpleConversation* conversation){
+	current_conversation = conversation;
+}
+
+/**
  * @brief Activates error notification messages
  */
 void notifications_on(void){
 	errors_on = 1;
 }
+
 /**
  * @brief Deactivates error notification messages
  */
@@ -60,26 +77,57 @@ void notifications_off(void){
 }
 
 /**
- * @brief Displays an information notification
+ * @brief Displays an information notification on the current conversation
+ *
+ * The plugin handle must have been set (set_translator_plugin called) before calling this function
+ * @param text Text string containing the main body of the notification
+ */
+void notify_info(const char* text){
+	time_t current;
+    time (&current);
+
+    if(current_conversation != NULL){
+    	purple_conversation_write(current_conversation, "Information", text, PURPLE_MESSAGE_NOTIFY, current);
+    }
+}
+
+/**
+ * @brief Displays an information notification inside a pop-up window
  *
  * The plugin handle must have been set (set_translator_plugin called) before calling this function
  * @param title Text string containing the title for the notification
  * @param text Text string containing the main body of the notification
  */
-void notify_info(const char* title, const char* text){
+void notify_info_popup(const char* title, const char* text){
 	purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_INFO,
 			"Apertium plugin information", title, text,NULL,NULL);
 }
 
 /**
- * @brief Displays an error notification
+ * @brief Displays an error notification on the current conversation
+ *
+ * The plugin handle must have been set (set_translator_plugin called) before calling this function
+ * @param text Text string containing the main body of the notification
+ */
+void notify_error(const char* text){
+	time_t current;
+    time (&current);
+
+    if(current_conversation != NULL){
+    	purple_conversation_write(current_conversation, "Error", text, PURPLE_MESSAGE_ERROR, current);
+	}
+}
+
+/**
+ * @brief Displays an error notification inside a pop-up window
  *
  * The plugin handle must have been set (set_translator_plugin called) before calling this function
  * @param text Text string containing the main body of the notification (generally, the cause of the error)
  */
-void notify_error(const char* text){
+void notify_error_popup(const char* text){
 	if(errors_on){
 		purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_ERROR,
 			"Apertium plugin error", text, NULL,NULL,NULL);
 	}
 }
+

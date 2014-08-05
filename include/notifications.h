@@ -21,10 +21,17 @@
 
 void set_translator_plugin(PurplePlugin* plugin);
 
+void set_conversation(PurpleConversation* conversation);
+
 void notifications_on(void);
 
 void notifications_off(void);
 
-void notify_info(const char* title, const char* text);
+void notify_info(const char* text);
+
+void notify_info_popup(const char* title, const char* text);
 
 void notify_error(const char* text);
+
+void notify_error_popup(const char* text);
+

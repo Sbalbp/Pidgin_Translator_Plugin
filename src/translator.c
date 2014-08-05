@@ -213,7 +213,7 @@ int parse_apy_arguments(char* args, int *order, char **address, char **port){
 }
 
 /**
- * @brief Parses and returns arguments for 'apertium_set' command
+ * @brief Parses and returns arguments for 'apertium_bind' command
  *
  * This function expects exactly 3 arguments. Passing less than 3 arguments in args will result in an error. Arguments after the third one will be ignored
  * @param args String containing the arguments passed to the command (separated by whitespaces)
@@ -222,7 +222,7 @@ int parse_apy_arguments(char* args, int *order, char **address, char **port){
  * @param target Reference to a string where the 'target language' argument will be stored
  * @return 1 on success, or 0 otherwise
  */
-int parse_set_arguments(char* args, char **command, char** source, char** target){
+int parse_bind_arguments(char* args, char **command, char** source, char** target){
 
     if((*command = strtok(args," ")) == NULL){
         notify_error("No command provided");
@@ -247,14 +247,14 @@ int parse_set_arguments(char* args, char **command, char** source, char** target
 }
 
 /**
- * @brief Parses and returns arguments for 'apertium_delete' command
+ * @brief Parses and returns arguments for 'apertium_unbind' command
  *
  * This function expects 1 argument in args. Additional arguments will be ignored
  * @param args String containing the argument passed to the command
  * @param command Reference to a string where the 'command' argument will be stored
  * @return 1 on success, or 0 otherwise
  */
-int parse_delete_arguments(char* args, char **command){
+int parse_unbind_arguments(char* args, char **command){
 
     if((*command = strtok(args," ")) == NULL){
         return 0;
@@ -289,6 +289,8 @@ PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
     const char *username;
     PurpleBuddy *buddy;
 
+    set_conversation(conv);
+
     title = malloc(sizeof(char)*100);
     text = malloc(sizeof(char)*300);
 
@@ -314,7 +316,7 @@ PurpleCmdRet apertium_check_cb(PurpleConversation *conv, const gchar *cmd,
         sprintf(text,"%sOutgoing messages: None", text);
     }
 
-    notify_info(title, text);
+    notify_info_popup(title, text);
 
     free(title);
     free(text);
@@ -338,6 +340,8 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
     int i, size;
     char *title, *text, ***pairsList;
 
+    set_conversation(conv);
+
     if(!(size = getAllPairs(&pairsList))){
         return PURPLE_CMD_RET_FAILED;
     }
@@ -360,7 +364,7 @@ PurpleCmdRet apertium_pairs_cb(PurpleConversation *conv, const gchar *cmd,
 
     sprintf(text,"%s", text);
 
-    notify_info(title, text);
+    notify_info_popup(title, text);
 
     for(i=0; i<size; i++){
         free(pairsList[i]);
@@ -389,14 +393,16 @@ PurpleCmdRet apertium_bind_cb(PurpleConversation *conv, const gchar *cmd,
     char *command, *source, *target, *msg;
 	PurpleBuddy *buddy;
 
-    if(parse_set_arguments(*args,&command,&source,&target)){
+    set_conversation(conv);
+
+    if(parse_bind_arguments(*args,&command,&source,&target)){
     	buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
         username = purple_buddy_get_name(buddy);
 
     	if(dictionarySetUserEntry(username,command,source,target)){
             msg = malloc(sizeof(char)*(strlen(source)+strlen(target)+strlen(command)+strlen(username)+100));
             sprintf(msg, "%s pair for %s successfully set to %s-%s",command,username,source,target);
-            notify_info("Success",msg);
+            notify_info(msg);
             free(msg);
     		return PURPLE_CMD_RET_OK;
     	}
@@ -426,13 +432,15 @@ PurpleCmdRet apertium_unbind_noargs_cb(PurpleConversation *conv, const gchar *cm
     char *msg;
     PurpleBuddy *buddy;
 
+    set_conversation(conv);
+
     buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
     username = purple_buddy_get_name(buddy);
 
     if(dictionaryRemoveUserEntries(username)){
         msg = malloc(sizeof(char)*(strlen(username)+100));
         sprintf(msg, "Successfully removed data for %s",username);
-        notify_info("Success",msg);
+        notify_info(msg);
         free(msg);
         return PURPLE_CMD_RET_OK;
     }
@@ -458,14 +466,16 @@ PurpleCmdRet apertium_unbind_args_cb(PurpleConversation *conv, const gchar *cmd,
     char *command, *msg;
     PurpleBuddy *buddy;
 
-    if(parse_delete_arguments(*args,&command)){
+    set_conversation(conv);
+
+    if(parse_unbind_arguments(*args,&command)){
         buddy = purple_find_buddy(purple_conversation_get_account(conv), purple_conversation_get_name(conv));
         username = purple_buddy_get_name(buddy);
 
         if(dictionaryRemoveUserEntry(username, command)){
             msg = malloc(sizeof(char)*(strlen(username)+strlen(command)+100));
             sprintf(msg, "Successfully removed %s data for %s",command,username);
-            notify_info("Success",msg);
+            notify_info(msg);
             free(msg);
             return PURPLE_CMD_RET_OK;
         }
@@ -494,6 +504,8 @@ PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
     char **addresses, *msg;
     int i,size;
 
+    set_conversation(conv);
+
     if((size = getAPYAddress(&addresses)) == -1){
         return PURPLE_CMD_RET_FAILED;
     }
@@ -504,7 +516,7 @@ PurpleCmdRet apertium_apy_noargs_cb(PurpleConversation *conv, const gchar *cmd,
             sprintf(msg,"%s\n%d - %s",msg,i+1,addresses[i]);
         }
 
-        notify_info("APY addresses", msg);
+        notify_info_popup("APY addresses", msg);
         free(addresses);
         free(msg);
 
@@ -528,6 +540,8 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
     char *address, *port;
     int order;
 
+    set_conversation(conv);
+
     if(parse_apy_arguments(*args, &order, &address, &port)){
         if(!setAPYAddress(address, port, order, 0)){
             return PURPLE_CMD_RET_FAILED;
@@ -537,7 +551,7 @@ PurpleCmdRet apertium_apy_args_cb(PurpleConversation *conv, const gchar *cmd,
         return PURPLE_CMD_RET_FAILED;
     }
 
-    notify_info("Success","APY address successfully set");
+    notify_info("APY address successfully set");
     return PURPLE_CMD_RET_OK;
 }
 
@@ -557,6 +571,8 @@ PurpleCmdRet apertium_apyremove_cb(PurpleConversation *conv, const gchar *cmd,
     char *position_str;
     int position;
 
+    set_conversation(conv);
+
     if((position_str = strtok(*args," ")) == NULL){
         notify_error("No 'position' argument provided");
         return PURPLE_CMD_RET_FAILED;
@@ -569,7 +585,7 @@ PurpleCmdRet apertium_apyremove_cb(PurpleConversation *conv, const gchar *cmd,
         }
     }
 
-    notify_info("Success","APY address successfully removed");
+    notify_info("APY address successfully removed");
     return PURPLE_CMD_RET_OK;
 }
 
@@ -588,6 +604,8 @@ PurpleCmdRet apertium_display_noargs_cb(PurpleConversation *conv, const gchar *c
                                 gchar **args, gchar **error, void *data){
     char *msg;
 
+    set_conversation(conv);
+
     msg = malloc(sizeof(char)*150);
 
     switch(display){
@@ -602,7 +620,7 @@ PurpleCmdRet apertium_display_noargs_cb(PurpleConversation *conv, const gchar *c
             break;
     }
 
-    notify_info("Current display mode",msg);
+    notify_info_popup("Current display mode",msg);
 
     free(msg);
 
@@ -623,6 +641,8 @@ PurpleCmdRet apertium_display_noargs_cb(PurpleConversation *conv, const gchar *c
 PurpleCmdRet apertium_display_args_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     char *mode;
+
+    set_conversation(conv);
 
     if((mode = strtok(*args," ")) == NULL){
         notify_error("No mode argument provided");
@@ -669,6 +689,8 @@ PurpleCmdRet apertium_errors_cb(PurpleConversation *conv, const gchar *cmd,
                                 gchar **args, gchar **error, void *data){
     char *swtch;
 
+    set_conversation(conv);
+
     if((swtch = strtok(*args," ")) == NULL){
         notify_error("No switch value provided");
         return PURPLE_CMD_RET_FAILED;
@@ -676,12 +698,12 @@ PurpleCmdRet apertium_errors_cb(PurpleConversation *conv, const gchar *cmd,
 
     if(!strcmp(swtch,"on")){
         notifications_on();
-        notify_info("Success","Error messages enabled");
+        notify_info("Error messages enabled");
         return PURPLE_CMD_RET_OK;
     }
     if(!strcmp(swtch,"off")){
         notifications_off();
-        notify_info("Success","Error messages disabled");
+        notify_info("Error messages disabled");
         return PURPLE_CMD_RET_OK;
     }
 
