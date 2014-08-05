@@ -436,11 +436,13 @@ const char* getDisplay(void){
             if(result != NULL && result != Py_None){
                 mode = (int)PyLong_AsLong(result);
                 Py_XDECREF(result);
-                if(mode == 0){
-                    return "both";
-                }
-                else{
-                    return "translation";
+                switch(mode){
+                    case 0:
+                        return "compressed";
+                    case 1:
+                        return "both";
+                    default:
+                        return "translation";
                 }
             }
             else{
@@ -462,18 +464,23 @@ const char* getDisplay(void){
  * @brief Sets the display_mode value in the dictionary so that it is store in the preferences file
  *
  * pythonInit() must have been called before or an error will occur (the module is not loaded)
- * @param display_mode The display_mode. Must be 'both' or 'translation'
+ * @param display_mode The display_mode. Must be 'both', 'translation' or 'compressed'
  * @return 1 on success or 0 otherwise
  */
 int setDisplay(const char* display_mode){
     int mode;
     PyObject *pFunc, *pArgs;
 
-    if(!strcmp("both",display_mode)){
+    if(!strcmp("compressed",display_mode)){
         mode = 0;
     }
     else{
-        mode = 1;
+        if(!strcmp("both",display_mode)){
+            mode = 1;
+        }
+        else{
+            mode = 2;
+        }
     }
 
     if(files_module != NULL){

@@ -40,12 +40,12 @@
 /**
  * @brief Describes the different ways in which a translated message can be shown
  */
-typedef enum {BOTH, TRANSLATION} display_mode;
+typedef enum {BOTH, TRANSLATION, COMPRESSED} display_mode;
 
 /**
  * @brief Variable containing the display_mode value that tell the plugin how messages should be shown
  */
-display_mode display = BOTH;
+display_mode display = COMPRESSED;
 
 /**
  * @brief ID for the 'apertium_bind' command
@@ -154,11 +154,15 @@ void translate_message(char **message, PurpleBuddy *buddy, const char *key){
             switch(display){
                 case BOTH:
                     *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+100));
-                    sprintf(*message,"\nOriginal:\n-----------------\n%s\n\nTranslation:\n-----------------\n%s\n",oldMsg,translation);
+                    sprintf(*message,"\n-- Original:\n%s\n-- Translation:\n%s",oldMsg,translation);
                     break;
                 case TRANSLATION:
                     *message = (char*)realloc(*message, sizeof(char)*(strlen(translation)+100));
-                    sprintf(*message,"%s\n",translation);
+                    sprintf(*message,"%s",translation);
+                    break;
+                case COMPRESSED:
+                    *message = (char*)realloc(*message, sizeof(char)*(strlen(oldMsg)+strlen(translation)+100));
+                    sprintf(*message,"%s\n-- Translation: %s",oldMsg,translation);
                     break;
             }
         }
@@ -587,6 +591,9 @@ PurpleCmdRet apertium_display_noargs_cb(PurpleConversation *conv, const gchar *c
     msg = malloc(sizeof(char)*150);
 
     switch(display){
+        case COMPRESSED:
+            sprintf(msg,"\"Compressed\"\nBoth the original message and its translation are displayed, in 2 lines");
+            break;
         case BOTH:
             sprintf(msg,"\"Both\"\nBoth the original message and its translation are displayed");
             break;
@@ -632,8 +639,14 @@ PurpleCmdRet apertium_display_args_cb(PurpleConversation *conv, const gchar *cmd
                 setDisplay("translation");
             }
             else{
-                notify_error("mode argument must be \"both\" or \"translation\"");
-                return PURPLE_CMD_RET_FAILED;
+                if(!strcmp(mode,"compressed")){
+                    display = COMPRESSED;
+                    setDisplay("compressed");
+                }
+                else{
+                    notify_error("mode argument must be \"both\", \"translation\" or \"compressed\"");
+                    return PURPLE_CMD_RET_FAILED;
+                }
             }
         }
     }
@@ -800,7 +813,7 @@ gboolean plugin_load(PurplePlugin *plugin){
 
     display_args_command_id = purple_cmd_register("apertium_display", "s", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_display_args_cb,
-        "apertium_display \'display_mode\'\nSets the display mode for translated messages.\nThe \'display_mode\' argument must be either \"both\" (displays the original message and its translation) or \"translation\" (displays only the translation)",
+        "apertium_display \'display_mode\'\nSets the display mode for translated messages.\nThe \'display_mode\' argument must be \"both\" (displays the original message and its translation), \"translation\" (displays only the translation) or \"compressed\" (displays both the original message and translation, but does so in 2 lines)",
         NULL);
 
     errors_command_id = purple_cmd_register("apertium_errors", "s", PURPLE_CMD_P_HIGH,
@@ -819,7 +832,12 @@ gboolean plugin_load(PurplePlugin *plugin){
             display = BOTH;
         }
         else{
-            display = TRANSLATION;
+            if(!strcmp(mode,"compressed")){
+                display = COMPRESSED;
+            }
+            else{
+                display = TRANSLATION;
+            }
         }
     }
 
