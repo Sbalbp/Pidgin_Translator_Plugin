@@ -35,13 +35,19 @@ If you have just cloned this repository you will need to first update the submod
 
 this will always fetch the latest version of the Python module, so it can be used to keep it up to date.
 
-Now that you have the Python module, you might want to install it:
+Now that you have the Python module, you might want to install it. First enter the submodule directory
+
+<ul>
+<li>cd Apertium_Plugin_Utils</li>
+</ul>
+
+and install it
 
 <ul>
 <li>python setup.py install</li>
 </ul>
 
-Now, to compile the plugin, run:
+Now, to compile the plugin, go back to main repository directory and run
 
 <ul>
 <li>./autogen.sh</li>
