@@ -11,6 +11,8 @@ When enabled, this plugin keeps track of the user's language preferences for eac
 
 The translating is done by an <a href="http://wiki.apertium.org/wiki/Apy">Apertium-apy</a> that may run locally or on a remote location (its address can be set from within the plugin).
 
+The plugin is able to use several APY instances, as it stores an ordered APY list. The first APY in the list takes priority when the plugin need to make a request to an APY. If the first APY is unreachable or unable to give an answer, the plugin will attempt to make the same request to the second APY in the list, and so on.
+
 <h3><b>Compilation Requirements</b></h3>
 
 <ul>
@@ -41,13 +43,15 @@ Now that you have the Python module, you might want to install it. First enter t
 <li>cd Apertium_Plugin_Utils</li>
 </ul>
 
-and install it
+and install the module. You can choose between a global installation with
 
 <ul>
-<li>python setup.py install</li>
+<li>sudo python setup.py install</li>
 </ul>
 
-Now, to compile the plugin, go back to main repository directory and run
+or you can install the module to a chosen folder (refer to this <a href="https://docs.python.org/2/install/">documentation</a> for different alternatives). In this case you will have to add the path where you installed the module (up to the site-packages folder) to your PYTHONPATH environment variable.
+
+Now, to compile the plugin, go back to the main repository directory and run
 
 <ul>
 <li>./autogen.sh</li>
@@ -64,6 +68,8 @@ Now run
 and the plugin (.so file) will be directly installed to the directory where Pidgin expects it to be (~/.purple/plugins).
 
 It will also generate the documentation in the doc folder.
+
+Lastly, in order to use the plugin, you must first activate it in Pidgin. From the Pidgin plugin installation <a href="https://developer.pidgin.im/wiki/ThirdPartyPlugins">page</a>: <em>You can manage available plugins by accessing the "Tools" menu from the Buddy List window and selecting "Plugins."</em>. This plugin will be listed as 'Message Translator'. If there was an error during plugin load, an error would be thrown.
 
 <h3><b>Plugin commands</b></h3>
 

@@ -11,6 +11,8 @@ When enabled, this plugin keeps track of the user's language preferences for eac
 
 The translating is done by an [Apertium-apy](http://wiki.apertium.org/wiki/Apy "Apertium-apy") that may run locally or on a remote location (its address can be set from within the plugin).
 
+The plugin is able to use several APY instances, as it stores an ordered APY list. The first APY in the list takes priority when the plugin need to make a request to an APY. If the first APY is unreachable or unable to give an answer, the plugin will attempt to make the same request to the second APY in the list, and so on.
+
 ###Compilation Requirements
 
 * **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial") ).
@@ -32,11 +34,13 @@ Now that you have the Python module, you might want to install it. First enter t
 
 * cd Apertium_Plugin_Utils
 
-and install it
+and install the module. You can choose between a global installation with
 
-* python setup.py install
+* sudo python setup.py install
 
-Now, to compile the plugin, go back to main repository directory and run
+or you can install the module to a chosen folder (refer to this [documentation](https://docs.python.org/2/install/ "documentation") for different alternatives). In this case you will have to add the path where you installed the module (up to the site-packages folder) to your PYTHONPATH environment variable.
+
+Now, to compile the plugin, go back to the main repository directory and run
 
 * ./autogen.sh
 
@@ -50,7 +54,7 @@ and the plugin (.so file) will be directly installed to the directory where Pidg
 
 It will also generate the documentation in the doc folder.
 
-Lastly, in order to use the plugin, you must first activate it in Pidgin. To do that just go to the Tools -> Plugins menu and select the 'Message Translator' plugin (unselect to deactivate the plugin). If there was an error during plugin load, an error would be thrown.
+Lastly, in order to use the plugin, you must first activate it in Pidgin. From the Pidgin plugin installation [page](https://developer.pidgin.im/wiki/ThirdPartyPlugins "page"): *You can manage available plugins by accessing the "Tools" menu from the Buddy List window and selecting "Plugins."*. This plugin will be listed as 'Message Translator'. If there was an error during plugin load, an error would be thrown.
 
 ###Plugin commands
 

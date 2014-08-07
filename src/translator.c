@@ -820,7 +820,7 @@ gboolean plugin_load(PurplePlugin *plugin){
 
     apy_args_command_id = purple_cmd_register("apertium_apy", "s", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_apy_args_cb,
-        "apertium_apy \'address\' \'port\'\nSets the address where the Apertium-APY is located.\nThe \'port\' argument is optional",
+        "apertium_apy \'position\' \'address\' \'port\'\nInserts a new APY address to the APY list at the given position.\nThe \'port\' argument is optional\nThe \'position\' argument is optional and defaults to the end of the list",
         NULL);
 
     apyremove_command_id = purple_cmd_register("apertium_apyremove", "s", PURPLE_CMD_P_HIGH,
