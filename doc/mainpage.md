@@ -18,6 +18,8 @@ The plugin is able to use several APY instances, as it stores an ordered APY lis
 <ul>
 <li><b>libpurple.</b> The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple <a href="http://sourceforge.net/projects/pidgin/">here</a> (don't forget to './configure' and 'make' it, as explained in this <a href="https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto">tutorial</a>).</li>
 
+Alternatively, you can install the pidgin-dev package.
+
 <li><b>glib2.0.</b> Install package libglib2.0-dev</li>
 
 <li><b>Python.</b> Install package python-dev</li>
@@ -76,13 +78,13 @@ Lastly, in order to use the plugin, you must first activate it in Pidgin. From t
 The following commands are available for now in the plugin:
 
 <ul>
-<li><b>/apertium_apy <em>position<em> <em>address</em> <em>port</em></b> Adds a new APY <em>address</em> to the APY list. <em>port</em> number is optional. </em>position</em> (optional) tells the plugin which position the new APY should take in the list (last if it exceeds the APY list length. If no arguments are given, it just shows the current address list.
+<li><b>/apertium_apy <em>position</em> <em>address</em> <em>port</em></b> Adds a new APY <em>address</em> to the APY list. <em>port</em> number is optional. </em>position</em> (optional) tells the plugin which position the new APY should take in the list (last if it exceeds the APY list length. If no arguments are given, it just shows the current address list.
 
 For example, if the APY list look like [address1, address2, address3] and we issue the command '/apertium_apy 1 http://localhost 2737', it will insert the address http://localhost:2737 to the APY list in the position number 1, pushing back ay other APY, which results in the following APY list: [address1, http://localhost:2737, address2, address3]. This means that the new address wil take priority over address2 and address3 when issuing a command that makes a request to an APY, but it will always be asked after address1.
 
 The default list only address is http://localhost:2737. The address http://apy.projectjj.com can be added to the list. This address, however, is not guaranteed to work 100% of the times, as it is still in test stage.</li>
 
-<li><b>/apertium_apyremove <em>position</em><b> Removes the APY address located at the given <em>position</em> in the APY list.</li>
+<li><b>/apertium_apyremove <em>position</em></b> Removes the APY address located at the given <em>position</em> in the APY list.</li>
 
 <li><b>/apertium_check</b> Shows the current language pairs associated with the buddy whose conversation you issued the command on.</li>
 

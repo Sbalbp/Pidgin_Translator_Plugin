@@ -16,6 +16,8 @@ The plugin is able to use several APY instances, as it stores an ordered APY lis
 ###Compilation Requirements
 
 * **libpurple.** The library containing all the development sources and headers needed for Pidgin Plugins, as well as some example plugins to help new developers get started. You can get a pidgin .tar file with libpurple [here](http://sourceforge.net/projects/pidgin/ "here") (don't forget to './configure' and 'make' it, as explained in this [tutorial](https://developer.pidgin.im/wiki/CHowTo/BasicPluginHowto "tutorial") ).
+
+	Alternatively, you can install the pidgin-dev package.
 * **glib2.0.** Install package libglib2.0-dev
 * **Python.** Install package python-dev
 * **(Optional)[Apertium-apy](http://wiki.apertium.org/wiki/Apy "Apertium-apy").** Needed if you intend to run your own apy in your machine.
