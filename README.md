@@ -68,7 +68,7 @@ The following commands are available for now in the plugin:
 
 	The default list only address is http://localhost:2737. The address http://apy.projectjj.com can be added to the list. This address, however, is not guaranteed to work 100% of the times, as it is still in test stage.
 
-* **/apertium_apyremove _position_* Removes the APY address located at the given *position* in the APY list.
+* **/apertium_apyremove _position_** Removes the APY address located at the given *position* in the APY list.
 * **/apertium_check** Shows the current language pairs associated with the buddy whose conversation you issued the command on.
 * **/apertium_pairs** Ask the apy which language pairs are available and shows them.
 * **/apertium_bind _direction_ _source_ _target_** Sets a language pair for the buddy whose conversation the command was issued on. *direction* must be either 'incoming' (for incoming messages) or 'outgoing' (for messages sent to that buddy). *source* and *target* are the source and target languages of the language pair to be set, respectively.
