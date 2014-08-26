@@ -118,6 +118,13 @@ PurpleCmdId display_noargs_command_id;
 PurpleCmdId display_args_command_id;
 
 /**
+ * @brief ID for the 'apertium_infodisplay' command
+ *
+ * Used to unregister the command on plugin unload
+ */
+PurpleCmdId info_display_command_id;
+
+/**
  * @brief ID for the 'apertium_errors' command
  *
  * Used to unregister the command on plugin unload
@@ -675,6 +682,50 @@ PurpleCmdRet apertium_display_args_cb(PurpleConversation *conv, const gchar *cmd
 }
 
 /**
+ * @brief Callback for the 'apertium_infodisplay' command
+ *
+ * Refer to the libpurple Commands API documentation for more information
+ * @param conv Conversation where the command was used
+ * @param cmd String containing the command
+ * @param args String containing the arguments passed to the command
+ * @param error
+ * @param data Additional data passed
+ * @return PURPLE_CMD_RET_OK on success, or PURPLE_CMD_RET_FAILED otherwise
+ */
+PurpleCmdRet apertium_infodisplay_args_cb(PurpleConversation *conv, const gchar *cmd,
+                                gchar **args, gchar **error, void *data){
+    char *mode;
+
+    set_conversation(conv);
+
+    if((mode = strtok(*args," ")) == NULL){
+        notify_error("No mode argument provided");
+        return PURPLE_CMD_RET_FAILED;
+    }
+    else{
+        if(!strcmp(mode,"dialog")){
+            set_info_display_mode("dialog");
+        }
+        else{
+            if(!strcmp(mode,"print")){
+                set_info_display_mode("print");
+            }
+            else{
+                if(!strcmp(mode,"none")){
+                    set_info_display_mode("none");
+                }
+                else{
+                    notify_error("mode argument must be \"dialog\", \"print\" or \"none\"");
+                    return PURPLE_CMD_RET_FAILED;
+                }
+            }
+        }
+    }
+
+    return PURPLE_CMD_RET_OK;
+}
+
+/**
  * @brief Callback for the 'apertium_errors' command
  *
  * Refer to the libpurple Commands API documentation for more information
@@ -838,6 +889,11 @@ gboolean plugin_load(PurplePlugin *plugin){
         "apertium_display \'display_mode\'\nSets the display mode for translated messages.\nThe \'display_mode\' argument must be \"both\" (displays the original message and its translation), \"translation\" (displays only the translation) or \"compressed\" (displays both the original message and translation, but does so in 2 lines)",
         NULL);
 
+    info_display_command_id = purple_cmd_register("apertium_infodisplay", "s", PURPLE_CMD_P_HIGH,
+        PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_infodisplay_args_cb,
+        "apertium_infodisplay \'info_display_mode\'\nSets the display mode for information text.\nThe \'info_display_mode\' argument must be \"dialog\" (displays the information in a dialog window), \"print\" (prints the information to the conversation) or \"none\" (no information is displayed)",
+        NULL);
+
     errors_command_id = purple_cmd_register("apertium_errors", "s", PURPLE_CMD_P_HIGH,
         PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_CHAT, PLUGIN_ID, apertium_errors_cb,
         "apertium_errors \'switch\'\nTurns on/off the error notification messages.\nThe \'switch\' argument must be either \"on\" or \"off\"",
@@ -889,6 +945,7 @@ gboolean plugin_unload(PurplePlugin *plugin){
     purple_cmd_unregister(apyremove_command_id);
     purple_cmd_unregister(display_noargs_command_id);
     purple_cmd_unregister(display_args_command_id);
+    purple_cmd_unregister(info_display_command_id);
     purple_cmd_unregister(errors_command_id);
 
 	pythonFinalize();

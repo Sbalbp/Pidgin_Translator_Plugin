@@ -23,6 +23,8 @@ void set_translator_plugin(PurplePlugin* plugin);
 
 void set_conversation(PurpleConversation* conversation);
 
+int set_info_display_mode(const char* mode);
+
 void notifications_on(void);
 
 void notifications_off(void);

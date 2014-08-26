@@ -25,6 +25,11 @@
 #include "notifications.h"
 
 /**
+ * @brief Describes the different ways in which information text can be displayed
+ */
+typedef enum {DIALOG, PRINT, NONE} info_display_mode;
+
+/**
  * @brief The plugin handle
  *
  * Its use is needed for plugin notification calls
@@ -37,6 +42,11 @@ PurplePlugin *translator_plugin_handle = NULL;
  * This is the ocnversation where notification will be displayed on
  */
 PurpleConversation *current_conversation = NULL;
+
+/**
+ * @brief Indicates how information text is displayed
+ */
+info_display_mode info_mode = DIALOG;
 
 /**
  * @brief Indicates whether or not error messages should be shown
@@ -60,6 +70,29 @@ void set_translator_plugin(PurplePlugin* plugin){
  */
 void set_conversation(PurpleConversation* conversation){
 	current_conversation = conversation;
+}
+
+/**
+ * @brief Sets the display mode for information
+ *
+ * @param mode String containing the information display mode to be set
+ * @return 1 on success or 0 otherwise
+ */
+int set_info_display_mode(const char* mode){
+	if(strcmp(mode,"dialog") == 0){
+		info_mode = DIALOG;
+		return 1;
+	}
+	if(strcmp(mode,"print") == 0){
+		info_mode = PRINT;
+		return 1;
+	}
+	if(strcmp(mode,"none") == 0){
+		info_mode = NONE;
+		return 1;
+	}
+
+	return 0;
 }
 
 /**
@@ -99,8 +132,22 @@ void notify_info(const char* text){
  * @param text Text string containing the main body of the notification
  */
 void notify_info_popup(const char* title, const char* text){
-	purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_INFO,
-			"Apertium plugin information", title, text,NULL,NULL);
+	time_t current;
+    time (&current);
+
+	switch(info_mode){
+		case DIALOG:
+			purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_INFO,
+				"Apertium plugin information", title, text,NULL,NULL);
+			break;
+		case PRINT:
+			if(current_conversation != NULL){
+    			purple_conversation_write(current_conversation, title, text, PURPLE_MESSAGE_NOTIFY, current);
+    		}
+			break;
+		case NONE:
+			break;
+	}
 }
 
 /**
@@ -113,7 +160,7 @@ void notify_error(const char* text){
 	time_t current;
     time (&current);
 
-    if(current_conversation != NULL){
+    if(current_conversation != NULL && errors_on){
     	purple_conversation_write(current_conversation, "Error", text, PURPLE_MESSAGE_ERROR, current);
 	}
 }
@@ -125,9 +172,23 @@ void notify_error(const char* text){
  * @param text Text string containing the main body of the notification (generally, the cause of the error)
  */
 void notify_error_popup(const char* text){
+	time_t current;
+    time (&current);
+
 	if(errors_on){
-		purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_ERROR,
-			"Apertium plugin error", text, NULL,NULL,NULL);
+		switch(info_mode){
+			case DIALOG:
+				purple_notify_message (translator_plugin_handle, PURPLE_NOTIFY_MSG_ERROR,
+					"Apertium plugin error", text, NULL,NULL,NULL);
+				break;
+			case PRINT:
+				if(current_conversation != NULL){
+    				purple_conversation_write(current_conversation, "Error", text, PURPLE_MESSAGE_ERROR, current);
+				}
+				break;
+			case NONE:
+				break;
+		}
 	}
 }
 

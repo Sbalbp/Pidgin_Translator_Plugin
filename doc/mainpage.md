@@ -96,6 +96,8 @@ The default list only address is http://localhost:2737. The address http://apy.p
 
 <li><b><em>apertium_display _displayMode</em></b> Selects how the messages should be displayed. <em>displayMode</em> (optional) can be 'both' (the translation and the original message are both displayed), 'translation' (only the translated message is displayed) or 'compressed' (both the translation and the original message are shown, in a compressed 2-line way). If no argument is passed, the current display mode is shown. The default display mode is 'compressed'.</li>
 
+<li><b>/apertium_infodisplay <em>infoDisplayMode</em></b> Sets how the information messages should be shown. <em>infoDisplayMode</em> must be 'dialog' (information will be displayed in a new pop-up window), 'print' (information will be printed to the current conversation) or 'none' (no information will be displayed).</li>
+
 <li><b>/apertium_errors <em>switch</em></b> Turns on/off the error notifications from the plugin. <em>switch</em> must be either 'on' (enable notifications) or 'off' (disable notifications).</li>
 </ul>
 
