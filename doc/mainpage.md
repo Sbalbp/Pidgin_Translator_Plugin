@@ -45,13 +45,29 @@ Now that you have the Python module, you might want to install it. First enter t
 <li>cd Apertium_Plugin_Utils</li>
 </ul>
 
-and install the module. You can choose between a global installation with
+and install the module.
+
+You can opt for a global installation with
 
 <ul>
 <li>sudo python setup.py install</li>
 </ul>
 
-or you can install the module to a chosen folder (refer to this <a href="https://docs.python.org/2/install/">documentation</a> for different alternatives). In this case you will have to add the path where you installed the module (up to the site-packages folder) to your PYTHONPATH environment variable.
+Alternatively, you can install the module to a chosen directory (prefix installation). To do this run the following
+
+<ul>
+<li>python setup.py install --prefix=route/to/module</li>
+</ul>
+
+don't forget to use your own custom route to install the module there. After that, a new directory tree containing the Python module will be created. You still need to tell Python to look for the module in this new directory, so you will have to add its route to your PYTHONPATH environment variable:
+
+<ul>
+<li>export PYTHONPATH=route/to/module/lib/pythonX.Y/site-packages:$PYTHONPATH</li>
+</ul>
+
+don't forget to add the whole route up to the site-packages directory (included). You can also edit your .profile/.bash_profile/.login file to add the above line so that the route is added to the PYTHONPATH automatically when you log in (therefore, you won't have to manually edit it every time).
+
+You can refer to this <a href="https://docs.python.org/2/install/">documentation</a> for other different  installing alternatives.
 
 Now, to compile the plugin, go back to the main repository directory and run
 
